@@ -2,6 +2,7 @@
 name = "nanonanoda"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
 
 [dependencies]
 hound = "3.5.1"
