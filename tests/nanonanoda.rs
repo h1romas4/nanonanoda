@@ -1,4 +1,4 @@
-use ::nanonanoda::nanonanoda::{map_samples_to_fnums, synth_from_spectral_features, mag_to_tl};
+use ::nanonanoda::nanonanoda::{mag_to_tl, map_samples_to_fnums, synth_from_spectral_features};
 use ::nanonanoda::pcm::{Peak, analyze_pcm_peaks, synthesize_sines};
 use ::nanonanoda::{
     Chip, ChipSpec, YM2203Spec, YMF262SpecOpl3, generate_12edo_fnum_table,

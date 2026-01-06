@@ -302,7 +302,7 @@ pub fn process_samples_resynth_multi_to_vgm(
         return Err("window_size must be > 0".to_string());
     }
     // VGM sample rate
-    let output_sample_rate = 44100; 
+    let output_sample_rate = 44100;
 
     let fnum_table_ymf262opl3 =
         generate_12edo_fnum_table::<YMF262SpecOpl3>(YMF262SpecOpl3::default_master_clock())
@@ -365,7 +365,11 @@ pub fn process_samples_resynth_multi_to_vgm(
     }
     if seen_ym2203 {
         init_ym2203(&mut builder, 0);
-        let chip_count = if ym2203_instances >= 2 { ym2203_instances } else { 1usize };
+        let chip_count = if ym2203_instances >= 2 {
+            ym2203_instances
+        } else {
+            1usize
+        };
         let base_2203 = find_and_tune_fnumber::<YM2203Spec>(
             &fnum_table_ym2203,
             440.0,
@@ -373,7 +377,7 @@ pub fn process_samples_resynth_multi_to_vgm(
         )
         .map_err(|e| format!("fnum tune error 2203: {:?}", e))?;
         for port in 0..chip_count {
-                for ch in 0u8..3u8 {
+            for ch in 0u8..3u8 {
                 init_ym2203_channel_and_op(
                     &mut builder,
                     port as u8,

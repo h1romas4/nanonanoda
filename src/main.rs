@@ -267,11 +267,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             args.output_sample_rate,
             &chip_instances,
         ),
-        Format::Vgm => generate_vgm_file(
-            &args.input,
-            args.output,
-            args.window_size,
-            &chip_instances,
-        ),
+        Format::Vgm => {
+            generate_vgm_file(&args.input, args.output, args.window_size, &chip_instances)
+        }
     }
 }

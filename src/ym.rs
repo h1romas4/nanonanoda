@@ -164,14 +164,7 @@ pub fn init_ymf262_channel_and_op(
     b.ymf262_write(freq_port, 0xB0 + freq_idx, high);
 }
 
-pub fn ym2203_keyon(
-    b: &mut VgmBuilder,
-    port: u8,
-    ch: u8,
-    fnum_val: u16,
-    block_val: u8,
-    tl: u8,
-) {
+pub fn ym2203_keyon(b: &mut VgmBuilder, port: u8, ch: u8, fnum_val: u16, block_val: u8, tl: u8) {
     let low = (fnum_val & 0xFF) as u8;
     let high = (((fnum_val >> 8) & 0x07) as u8) | ((block_val & 0x07) << 3);
 

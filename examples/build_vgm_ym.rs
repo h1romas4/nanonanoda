@@ -196,7 +196,7 @@ fn build_ym2203_2chip_3ch_init_and_scale() -> nanonanoda::vgm::VgmDocument {
 
     for port in 0u8..2u8 {
         for ch in 0u8..3u8 {
-                nanonanoda::ym::init_ym2203_channel_and_op(&mut b, port, ch, fnum_val, block, 0x10);
+            nanonanoda::ym::init_ym2203_channel_and_op(&mut b, port, ch, fnum_val, block, 0x10);
         }
     }
 

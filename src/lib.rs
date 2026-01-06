@@ -10,7 +10,7 @@ pub use fnumber::{
 };
 pub use nanonanoda::{
     SpectralFeature, map_samples_to_fnums, process_samples_resynth_multi,
-    synth_from_spectral_features, process_samples_resynth_multi_to_vgm,
+    process_samples_resynth_multi_to_vgm, synth_from_spectral_features,
 };
 pub use pcm::{Peak, analyze_pcm_peaks, interleaved_to_mono, synthesize_sines};
 pub use vgm::VgmBuilder;
