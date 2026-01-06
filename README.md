@@ -121,6 +121,14 @@ Note: `--mapdir <GUEST_DIR:HOST_DIR>` maps a host directory into the WASI module
 
 Rust and Cargo are required.
 
+Linux/macOS:
+
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
+
+Windows: [rustup](https://rustup.rs/)
+
 Build and run tests:
 
 ```sh
