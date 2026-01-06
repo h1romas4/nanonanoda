@@ -11,6 +11,8 @@ Note:
 - These default settings were created for [NanoDrive7](https://github.com/Fujix1/NanoDrive7).
 - This repository is a work in progress (WIP) and may contain bugs.
 
+[![](https://github.com/h1romas4/nanonanoda/raw/main/assets/image/nanonanoda-02.png)](https://youtu.be/BBktoIkhfDk)
+
 ## Usage
 
 Use the CLI to generate either a VGM or a re-synthesized WAV from an input WAV file.
@@ -77,8 +79,6 @@ target/release/nanonanoda --format vgm path/to/input.wav
 
 ```sh
 curl -L -o nanonanoda.wasm https://github.com/h1romas4/nanonanoda/releases/latest/download/nanonanoda.wasm
-curl -L -o nanonanoda.wasm.sha256 https://github.com/h1romas4/nanonanoda/releases/latest/download/nanonanoda.wasm.sha256
-sha256sum -c nanonanoda.wasm.sha256
 ```
 
 - Install [wasmtime](https://github.com/bytecodealliance/wasmtime) (recommended):
