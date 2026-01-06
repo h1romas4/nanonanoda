@@ -368,7 +368,7 @@ pub fn find_and_tune_fnumber<C: ChipSpec>(
         break;
     }
 
-    let mut cand_down = if start_fnum > 1 { start_fnum - 1 } else { 0 };
+    let mut cand_down = start_fnum.saturating_sub(1);
     while cand_down >= 1 {
         let produced = if scale_k > 0.0 {
             scale_k * (cand_down as f64)

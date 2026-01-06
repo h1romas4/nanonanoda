@@ -99,7 +99,7 @@ pub fn synthesize_sines(peaks: &[Peak], sample_rate: usize, sample_count: usize)
     let mut comps: Vec<(f64, f64)> = Vec::with_capacity(peaks.len()); // (omega, amp)
     for peak in peaks {
         let omega = 2.0 * std::f64::consts::PI * peak.freq_hz / (sample_rate as f64);
-        let amp = (peak.magnitude / max_mag) as f64;
+        let amp = peak.magnitude / max_mag;
         comps.push((omega, amp));
     }
 

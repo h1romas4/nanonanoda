@@ -182,6 +182,12 @@ pub struct VgmBuilder {
     doc: VgmDocument,
 }
 
+impl Default for VgmBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl VgmBuilder {
     pub fn new() -> Self {
         VgmBuilder {

@@ -277,7 +277,7 @@ pub fn mag_to_tl(mag: f64, max_tl: u8) -> u8 {
     let db_max = 0.0;
     let t = ((mag_db - db_min) / (db_max - db_min)).clamp(0.0, 1.0);
     // Map t==1.0 -> max_tl (loud), t==0.0 -> 0x3f (silent)
-    let range = (0x3f as i32 - max_tl as i32) as f64;
+    let range = (0x3f_i32 - max_tl as i32) as f64;
     let tl_f = (1.0 - t) * range + (max_tl as f64);
     tl_f.round().clamp(max_tl as f64, 0x3f as f64) as u8
 }
