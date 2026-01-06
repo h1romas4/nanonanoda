@@ -115,6 +115,8 @@ Note: `--dir <HOST_DIR[::GUEST_DIR]>` maps a host directory into the WASI module
 wasmer run --mapdir /:./assets/voice nanonanoda.wasm -- --format vgm /nanonanoda.wav
 ```
 
+Note: `--mapdir <GUEST_DIR:HOST_DIR>` maps a host directory into the WASI module.
+
 ## Build and test
 
 Rust and Cargo are required.
