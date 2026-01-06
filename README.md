@@ -81,7 +81,7 @@ target/release/nanonanoda --format vgm path/to/input.wav
 curl -L -o nanonanoda.wasm https://github.com/h1romas4/nanonanoda/releases/latest/download/nanonanoda.wasm
 ```
 
-- Install [wasmtime](https://github.com/bytecodealliance/wasmtime) (recommended):
+- Install [wasmtime](https://github.com/bytecodealliance/wasmtime) or [Wasmer](https://github.com/wasmerio/wasmer):
 
 Linux/macOS:
 
@@ -108,6 +108,12 @@ wasmtime run --dir ./assets/voice::/ nanonanoda.wasm --format vgm /nanonanoda.wa
 ```
 
 Note: `--dir <HOST_DIR[::GUEST_DIR]>` maps a host directory into the WASI module.
+
+- Wasmer:
+
+```
+wasmer run --mapdir /:./assets/voice nanonanoda.wasm -- --format vgm /nanonanoda.wav
+```
 
 ## Build and test
 
