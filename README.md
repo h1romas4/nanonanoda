@@ -125,9 +125,3 @@ Build and run tests:
 cargo build
 cargo test
 ```
-
-## Development notes
-
-- TL mapping: `src/nanonanoda.rs::mag_to_tl` converts spectral magnitude to the chip TL range. Unit tests for this mapping exist in `tests/nanonanoda.rs`.
-
-If you'd like additional features (for example, a CLI option to set `max_tl`, voice-tracking across analysis windows, or finer TL mapping curves), tell me which one and I can implement it.
