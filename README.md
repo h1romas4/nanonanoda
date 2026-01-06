@@ -11,7 +11,7 @@ Note:
 - These default settings were created for [NanoDrive7](https://github.com/Fujix1/NanoDrive7).
 - This repository is a work in progress (WIP) and may contain bugs.
 
-[![](https://github.com/h1romas4/nanonanoda/raw/main/assets/image/nanonanoda-02.png)](https://youtu.be/BBktoIkhfDk)
+[![](https://github.com/h1romas4/nanonanoda/raw/main/assets/image/nanonanoda-02.jpg)](https://youtu.be/BBktoIkhfDk)
 
 ## Usage
 
