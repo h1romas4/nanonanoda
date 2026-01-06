@@ -13,9 +13,11 @@ fn build_opl3_2op_4ch_ym() -> nanonanoda::vgm::VgmDocument {
     let mut b = nanonanoda::vgm::VgmBuilder::new();
 
     // GD3 metadata for this example
-    let mut gd3 = nanonanoda::vgm::Gd3::default();
-    gd3.track_name_en = Some("OPL3 2op 4ch (via ym.rs)".to_string());
-    gd3.game_name_en = Some("nanonanoda examples".to_string());
+    let gd3 = nanonanoda::vgm::Gd3 {
+        track_name_en: Some("OPL3 2op 4ch (via ym.rs)".to_string()),
+        game_name_en: Some("nanonanoda examples".to_string()),
+        ..Default::default()
+    };
     b.set_gd3(gd3);
 
     let fnum_table = nanonanoda::fnumber::generate_12edo_fnum_table::<
@@ -66,9 +68,11 @@ fn build_opl3_2op_4ch_ym() -> nanonanoda::vgm::VgmDocument {
 fn build_ym2203_4op_1ch_ym() -> nanonanoda::vgm::VgmDocument {
     let mut b = nanonanoda::vgm::VgmBuilder::new();
 
-    let mut gd3 = nanonanoda::vgm::Gd3::default();
-    gd3.track_name_en = Some("YM2203 4op 1ch (via ym.rs)".to_string());
-    gd3.game_name_en = Some("nanonanoda examples".to_string());
+    let gd3 = nanonanoda::vgm::Gd3 {
+        track_name_en: Some("YM2203 4op 1ch (via ym.rs)".to_string()),
+        game_name_en: Some("nanonanoda examples".to_string()),
+        ..Default::default()
+    };
     b.set_gd3(gd3);
 
     // Carrier frequency/key-on for channel 0 (A4)
@@ -102,9 +106,11 @@ fn build_ym2203_4op_1ch_ym() -> nanonanoda::vgm::VgmDocument {
 fn build_ym2203_2chip_3ch_ym() -> nanonanoda::vgm::VgmDocument {
     let mut b = nanonanoda::vgm::VgmBuilder::new();
 
-    let mut gd3 = nanonanoda::vgm::Gd3::default();
-    gd3.track_name_en = Some("YM2203 2-chip 3ch (via ym.rs)".to_string());
-    gd3.game_name_en = Some("nanonanoda examples".to_string());
+    let gd3 = nanonanoda::vgm::Gd3 {
+        track_name_en: Some("YM2203 2-chip 3ch (via ym.rs)".to_string()),
+        game_name_en: Some("nanonanoda examples".to_string()),
+        ..Default::default()
+    };
     b.set_gd3(gd3);
 
     let master = nanonanoda::fnumber::YM2203Spec::default_master_clock();
@@ -138,9 +144,11 @@ fn build_ym2203_2chip_3ch_ym() -> nanonanoda::vgm::VgmDocument {
 fn build_opl3_1chip_18ch_ym() -> nanonanoda::vgm::VgmDocument {
     let mut b = nanonanoda::vgm::VgmBuilder::new();
 
-    let mut gd3 = nanonanoda::vgm::Gd3::default();
-    gd3.track_name_en = Some("YMF262 1-chip 18ch (via ym.rs)".to_string());
-    gd3.game_name_en = Some("nanonanoda examples".to_string());
+    let gd3 = nanonanoda::vgm::Gd3 {
+        track_name_en: Some("YMF262 1-chip 18ch (via ym.rs)".to_string()),
+        game_name_en: Some("nanonanoda examples".to_string()),
+        ..Default::default()
+    };
     b.set_gd3(gd3);
 
     let master = nanonanoda::fnumber::YMF262SpecOpl3::default_master_clock();
@@ -174,9 +182,11 @@ fn build_opl3_1chip_18ch_ym() -> nanonanoda::vgm::VgmDocument {
 fn build_ym2203_2chip_3ch_init_and_scale() -> nanonanoda::vgm::VgmDocument {
     let mut b = nanonanoda::vgm::VgmBuilder::new();
 
-    let mut gd3 = nanonanoda::vgm::Gd3::default();
-    gd3.track_name_en = Some("YM2203 init(C4=261.63Hz) + scale (via ym.rs)".to_string());
-    gd3.game_name_en = Some("nanonanoda examples".to_string());
+    let gd3 = nanonanoda::vgm::Gd3 {
+        track_name_en: Some("YM2203 init(C4=261.63Hz) + scale (via ym.rs)".to_string()),
+        game_name_en: Some("nanonanoda examples".to_string()),
+        ..Default::default()
+    };
     b.set_gd3(gd3);
 
     let master = nanonanoda::fnumber::YM2203Spec::default_master_clock();
@@ -224,9 +234,11 @@ fn build_ym2203_2chip_3ch_init_and_scale() -> nanonanoda::vgm::VgmDocument {
 fn build_opl3_1chip_18ch_init_and_scale() -> nanonanoda::vgm::VgmDocument {
     let mut b = nanonanoda::vgm::VgmBuilder::new();
 
-    let mut gd3 = nanonanoda::vgm::Gd3::default();
-    gd3.track_name_en = Some("OPL3 init(C4=261.63Hz) + scale (via ym.rs)".to_string());
-    gd3.game_name_en = Some("nanonanoda examples".to_string());
+    let gd3 = nanonanoda::vgm::Gd3 {
+        track_name_en: Some("OPL3 init(C4=261.63Hz) + scale (via ym.rs)".to_string()),
+        game_name_en: Some("nanonanoda examples".to_string()),
+        ..Default::default()
+    };
     b.set_gd3(gd3);
 
     let master = nanonanoda::fnumber::YMF262SpecOpl3::default_master_clock();

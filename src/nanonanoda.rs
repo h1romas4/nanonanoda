@@ -197,7 +197,7 @@ pub fn synth_from_spectral_features(
 /// - `window_size`: analysis window size in samples
 /// - `output_sample_rate`: desired sample rate for synthesized output
 /// - `chip_instances`: list of `(Chip, voices)` tuples describing which chips
-///    to emulate and how many voices to allocate per instance
+///   to emulate and how many voices to allocate per instance
 ///
 /// Returns the synthesized mono buffer or an error message if analysis
 /// or synthesis fails.

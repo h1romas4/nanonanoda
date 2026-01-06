@@ -209,8 +209,9 @@ pub fn generate_12edo_fnum_table<C: ChipSpec>(
     let mut fnum_table: [[Option<FNumberEntry>; 12]; 8] =
         std::array::from_fn(|_| std::array::from_fn(|_| None::<FNumberEntry>));
 
-    for block in 0..=max_block {
-        for semitone in 0..12usize {
+    // Iterate over the table rows and columns using iterator-style loops to avoid range-indexing.
+    for (block, row) in fnum_table.iter_mut().enumerate().take(max_block + 1) {
+        for (semitone, slot) in row.iter_mut().enumerate() {
             let semitone_offset =
                 (block as i32 - spec.a4_block as i32) * 12 + (semitone as i32 - 9);
             let target_freq = A4_HZ * 2f64.powf(semitone_offset as f64 / 12.0);
@@ -254,7 +255,7 @@ pub fn generate_12edo_fnum_table<C: ChipSpec>(
                 }
             }
 
-            fnum_table[block][semitone] = best.map(|e| (target_freq, e));
+            *slot = best.map(|e| (target_freq, e));
         }
     }
 
@@ -275,27 +276,26 @@ pub fn find_closest_fnumber<C: ChipSpec>(
 
     let mut best: Option<(FNumber, f64, f64)> = None;
 
-    for block in 0..8usize {
-        for semitone in 0..12usize {
-            if let Some((_, fnum)) = &fnum_table[block][semitone] {
-                let produced = fnum.actual_freq_hz;
-                if !produced.is_finite() || produced <= 0.0 {
-                    continue;
-                }
-                let ratio = produced / freq;
-                let err_cents = ratio.log2().abs() * 1200.0;
-                let err_hz = (produced - freq).abs();
+    // Use iterator-style nested loops to avoid indexing by range variables.
+    for row in fnum_table.iter() {
+        // iterate only the `Some` entries
+        for entry in row.iter().flatten() {
+            let fnum = entry.1;
+            let produced = fnum.actual_freq_hz;
+            if !produced.is_finite() || produced <= 0.0 {
+                continue;
+            }
+            let ratio = produced / freq;
+            let err_cents = ratio.log2().abs() * 1200.0;
+            let err_hz = (produced - freq).abs();
 
-                match &best {
-                    None => {
-                        best = Some((*fnum, err_cents, err_hz));
-                    }
-                    Some((_, best_cents, best_hz)) => {
-                        if err_cents < *best_cents
-                            || (err_cents == *best_cents && err_hz < *best_hz)
-                        {
-                            best = Some((*fnum, err_cents, err_hz));
-                        }
+            match &best {
+                None => {
+                    best = Some((fnum, err_cents, err_hz));
+                }
+                Some((_, best_cents, best_hz)) => {
+                    if err_cents < *best_cents || (err_cents == *best_cents && err_hz < *best_hz) {
+                        best = Some((fnum, err_cents, err_hz));
                     }
                 }
             }

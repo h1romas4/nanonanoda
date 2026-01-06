@@ -8,9 +8,9 @@ fn test_analyze_single_tone() {
 
     fn generate_sine(freq_hz: f64, sample_rate: usize, len: usize) -> Vec<f32> {
         let mut v = vec![0.0f32; len];
-        for i in 0..len {
+        for (i, val) in v.iter_mut().enumerate() {
             let t = i as f64 / (sample_rate as f64);
-            v[i] = (2.0 * std::f64::consts::PI * freq_hz * t).sin() as f32;
+            *val = (2.0 * std::f64::consts::PI * freq_hz * t).sin() as f32;
         }
         v
     }

@@ -37,7 +37,6 @@ fn test_process_samples_resynth_multi_44100() {
 
     // Basic sanity checks: returned buffer is non-empty and has reasonable length
     assert!(!out.is_empty(), "output buffer is empty");
-    assert!(out.len() >= 1, "output length should be at least 1");
 }
 
 #[test]
@@ -180,9 +179,8 @@ fn test_multi_tone_varied_magnitudes() {
     );
     let bin_width = (sample_rate as f64) / (window as f64);
     let targets = [220.0_f64, 440.0_f64, 880.0_f64];
-    for i in 0..3usize {
-        let detected = peaks_out.get(i).expect("missing peak");
-        let diff = (detected.freq_hz - targets[i]).abs();
+    for (i, (&t, detected)) in targets.iter().zip(peaks_out.iter()).enumerate() {
+        let diff = (detected.freq_hz - t).abs();
         assert!(diff <= bin_width * 2.0, "peak {} mismatch: {} Hz", i, diff);
     }
 
@@ -201,9 +199,8 @@ fn test_multi_tone_varied_magnitudes() {
         peaks_out.len() >= 3,
         "expected at least 3 peaks in synthesized output (2203)"
     );
-    for i in 0..3usize {
-        let detected = peaks_out.get(i).expect("missing peak");
-        let diff = (detected.freq_hz - targets[i]).abs();
+    for (i, (&t, detected)) in targets.iter().zip(peaks_out.iter()).enumerate() {
+        let diff = (detected.freq_hz - t).abs();
         assert!(
             diff <= bin_width * 2.0,
             "peak {} mismatch: {} Hz (2203)",

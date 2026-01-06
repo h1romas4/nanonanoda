@@ -12,7 +12,7 @@ fn test_to_bytes_waits_and_eof() {
 
     let bytes = doc.to_bytes();
 
-    assert_eq!(&bytes[0..4], b"Vgm ");
+    assert_eq!(&bytes[..4], b"Vgm ");
 
     let version = u32::from_le_bytes(bytes[0x08..0x0C].try_into().unwrap());
     assert_eq!(version, doc.header.version);
@@ -29,23 +29,9 @@ fn test_to_bytes_waits_and_eof() {
     assert_eq!(seq[1], 0xE8u8);
     assert_eq!(seq[2], 0x03u8);
 
-    let mut found = 0;
-    for &b in &seq[3..] {
-        if found == 0 && b == 0x62u8 {
-            found = 1;
-            continue;
-        }
-        if found == 1 && b == 0x63u8 {
-            found = 2;
-            continue;
-        }
-        if found == 2 && b == 0x66u8 {
-            found = 3;
-            break;
-        }
-    }
-    assert_eq!(
-        found, 3,
+    let found_seq = seq[3..].windows(3).position(|w| w == b"\x62\x63\x66");
+    assert!(
+        found_seq.is_some(),
         "did not find 0x62/0x63/0x66 sequence in command stream"
     );
 }
@@ -56,9 +42,11 @@ fn test_gd3_serialization() {
     b.wait_samples(1);
     b.end();
 
-    let mut gd3 = Gd3::default();
-    gd3.track_name_en = Some("TrackX".to_string());
-    gd3.notes = Some("Note".to_string());
+    let gd3 = Gd3 {
+        track_name_en: Some("TrackX".to_string()),
+        notes: Some("Note".to_string()),
+        ..Default::default()
+    };
 
     b.set_gd3(gd3);
     let doc = b.build();
@@ -120,15 +108,8 @@ fn test_ym2203_port1_write_encoding() {
     assert!(bytes.len() > cmd_start + 3);
     let seq = &bytes[cmd_start..];
 
-    let mut found = false;
-    for i in 0..seq.len().saturating_sub(2) {
-        if seq[i] == 0xA5u8 && seq[i + 1] == 0x2A && seq[i + 2] == 0x55 {
-            found = true;
-            break;
-        }
-    }
     assert!(
-        found,
+        seq.windows(3).any(|w| w == b"\xA5\x2A\x55"),
         "did not find YM2203 port1 write triplet (0xA5,0x2A,0x55)"
     );
 }
@@ -146,21 +127,15 @@ fn test_to_bytes_chip_writes() {
     let cmd_start = 0x100usize;
     let seq = &bytes[cmd_start..];
 
-    let mut idx = 0usize;
-    while idx + 3 <= seq.len() {
-        if seq[idx] == 0x5E && seq[idx + 1] == 0x20 && seq[idx + 2] == 0x99 {
-            break;
-        }
-        idx += 1;
-    }
-    assert!(idx + 3 <= seq.len(), "did not find YMF262 write sequence");
-    idx += 3;
-
-    while idx + 3 <= seq.len() {
-        if seq[idx] == 0x55 && seq[idx + 1] == 0x2A && seq[idx + 2] == 0x55 {
-            break;
-        }
-        idx += 1;
-    }
-    assert!(idx + 3 <= seq.len(), "did not find YM2203 write sequence");
+    // find first sequence (YMF262 write)
+    let pos1 = seq
+        .windows(3)
+        .position(|w| w == b"\x5E\x20\x99")
+        .expect("did not find YMF262 write sequence");
+    // search for the next sequence after the first (YM2203 write)
+    let pos2 = seq[pos1 + 3..]
+        .windows(3)
+        .position(|w| w == b"\x55\x2A\x55")
+        .expect("did not find YM2203 write sequence");
+    let _idx_after = pos1 + 3 + pos2;
 }

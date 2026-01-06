@@ -41,8 +41,7 @@ pub fn analyze_pcm_peaks(samples: &[f32], sample_rate: usize, max_peaks: usize) 
 
     let half = fft_size / 2;
     let mut mags: Vec<f64> = Vec::with_capacity(half);
-    for bin_idx in 0..half {
-        let comp = buffer[bin_idx];
+    for comp in buffer.iter().take(half) {
         let mag = ((comp.re as f64).powi(2) + (comp.im as f64).powi(2)).sqrt();
         mags.push(mag);
     }
@@ -103,13 +102,13 @@ pub fn synthesize_sines(peaks: &[Peak], sample_rate: usize, sample_count: usize)
         comps.push((omega, amp));
     }
 
-    for sample_idx in 0..sample_count {
+    for (sample_idx, slot) in out.iter_mut().enumerate().take(sample_count) {
         let t = sample_idx as f64;
         let mut sum = 0.0f64;
         for (omega, amp) in &comps {
             sum += amp * (omega * t).sin();
         }
-        out[sample_idx] = sum as f32;
+        *slot = sum as f32;
     }
 
     let max_abs = out.iter().fold(0.0f32, |m, &v| m.max(v.abs()));

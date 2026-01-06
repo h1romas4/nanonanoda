@@ -1,4 +1,3 @@
-use std::i16;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
@@ -88,20 +87,18 @@ fn read_wav_to_mono_f32(path: &str) -> Result<(Vec<f32>, usize), Box<dyn std::er
     let spec = reader.spec();
     let sample_rate = spec.sample_rate as usize;
 
-    let out: Vec<f32>;
-
-    match (spec.sample_format, spec.bits_per_sample) {
+    let out: Vec<f32> = match (spec.sample_format, spec.bits_per_sample) {
         (hound::SampleFormat::Int, 16) => {
             let samples: Vec<i16> = reader.samples::<i16>().map(|s| s.unwrap_or(0)).collect();
-            out = interleaved_to_mono(&samples, spec.channels as usize);
+            interleaved_to_mono(&samples, spec.channels as usize)
         }
         (hound::SampleFormat::Int, 24) | (hound::SampleFormat::Int, 32) => {
             let samples_i32: Vec<i32> = reader.samples::<i32>().map(|s| s.unwrap_or(0)).collect();
-            out = interleaved_to_mono(&samples_i32, spec.channels as usize);
+            interleaved_to_mono(&samples_i32, spec.channels as usize)
         }
         (hound::SampleFormat::Float, 32) => {
             let samples_f32: Vec<f32> = reader.samples::<f32>().map(|s| s.unwrap_or(0.0)).collect();
-            out = interleaved_to_mono(&samples_f32, spec.channels as usize);
+            interleaved_to_mono(&samples_f32, spec.channels as usize)
         }
         _ => {
             return Err(format!(
@@ -110,7 +107,7 @@ fn read_wav_to_mono_f32(path: &str) -> Result<(Vec<f32>, usize), Box<dyn std::er
             )
             .into());
         }
-    }
+    };
 
     Ok((out, sample_rate))
 }
@@ -128,7 +125,7 @@ fn write_mono_f32_wav(
     };
     let mut writer = hound::WavWriter::create(path, spec)?;
     for &s in samples {
-        let s_clamped = s.max(-1.0).min(1.0);
+        let s_clamped = s.clamp(-1.0, 1.0);
         let sample_i16 = (s_clamped * (i16::MAX as f32)) as i16;
         writer.write_sample(sample_i16)?;
     }
