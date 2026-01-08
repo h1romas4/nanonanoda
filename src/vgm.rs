@@ -145,7 +145,7 @@ impl VgmDocument {
                 multipcm_clock: 0,
                 upd7759_clock: 0,
                 okim6258_clock: 0,
-                okim6258_flags: [0u8; 4],
+                okim6258_flags: [0; 4],
                 okim6295_clock: 0,
                 k051649_clock: 0,
                 k054539_clock: 0,
@@ -168,8 +168,8 @@ impl VgmDocument {
                 c352_clock: 0,
                 ga20_clock: 0,
                 mikey_clock: 0,
-                reserved_e8_ef: [0u8; 8],
-                reserved_f0_ff: [0u8; 16],
+                reserved_e8_ef: [0; 8],
+                reserved_f0_ff: [0; 16],
             },
             commands: Vec::new(),
             gd3: None,
@@ -261,7 +261,7 @@ impl VgmBuilder {
 
 impl VgmDocument {
     pub fn to_bytes(&self) -> Vec<u8> {
-        let mut buf: Vec<u8> = vec![0u8; 0x100];
+        let mut buf: Vec<u8> = vec![0; 0x100];
 
         fn write_u32(buf: &mut [u8], off: usize, v: u32) {
             let bytes = v.to_le_bytes();
@@ -288,11 +288,11 @@ impl VgmDocument {
                     let mut remaining = *n;
                     while remaining > 0 {
                         let this = if remaining > 0xFFFF {
-                            0xFFFFu32
+                            0xFFFF_u32
                         } else {
                             remaining
                         } as u16;
-                        cmd_buf.push(0x61u8);
+                        cmd_buf.push(0x61);
                         cmd_buf.extend_from_slice(&this.to_le_bytes());
                         remaining = remaining.saturating_sub(this as u32);
                     }
@@ -300,12 +300,12 @@ impl VgmDocument {
                 VgmCommand::Wait60Hz => {
                     total_samples_u64 =
                         total_samples_u64.saturating_add(self.header.sample_rate as u64 / 60u64);
-                    cmd_buf.push(0x62u8)
+                    cmd_buf.push(0x62)
                 }
                 VgmCommand::Wait50Hz => {
                     total_samples_u64 =
                         total_samples_u64.saturating_add(self.header.sample_rate as u64 / 50u64);
-                    cmd_buf.push(0x63u8)
+                    cmd_buf.push(0x63_u8)
                 }
                 VgmCommand::EndOfData => cmd_buf.push(0x66u8),
                 VgmCommand::Ymf262Write {
@@ -313,7 +313,7 @@ impl VgmDocument {
                     register,
                     value,
                 } => {
-                    let base = if (port & 1) == 0 { 0x5Eu8 } else { 0x5Fu8 };
+                    let base: u8 = if (port & 1) == 0 { 0x5E } else { 0x5F };
                     let opcode = if (port & 0x02) != 0 {
                         base.wrapping_add(0x50)
                     } else {
@@ -328,7 +328,7 @@ impl VgmDocument {
                     register,
                     value,
                 } => {
-                    let base = 0x55u8;
+                    let base: u8 = 0x55;
                     let opcode = if (*port) != 0 {
                         base.wrapping_add(0x50)
                     } else {
@@ -349,7 +349,7 @@ impl VgmDocument {
         let gd3_offset_val: u32 = if self.gd3.is_some() {
             (0x100u32)
                 .wrapping_add(cmd_buf.len() as u32)
-                .wrapping_sub(0x14u32)
+                .wrapping_sub(0x14)
         } else {
             0u32
         };
@@ -388,7 +388,7 @@ impl VgmDocument {
         let data_offset_val: u32 = if self.header.data_offset != 0 {
             self.header.data_offset
         } else {
-            0x100u32.wrapping_sub(0x34u32)
+            0x100u32.wrapping_sub(0x34)
         };
         write_u32(&mut buf, 0x34, data_offset_val);
         // SegaPCM clock (0x38)
@@ -501,7 +501,7 @@ impl VgmDocument {
 
             buf.extend_from_slice(b"Gd3 ");
             buf.extend_from_slice(&0x00000100u32.to_le_bytes()); // version 1.00
-            buf.extend_from_slice(&0u32.to_le_bytes()); // placeholder for length
+            buf.extend_from_slice(&0_u32.to_le_bytes()); // placeholder for length
 
             let fields: [&Option<String>; 11] = [
                 &gd3.track_name_en,

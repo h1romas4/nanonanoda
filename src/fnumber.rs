@@ -209,7 +209,6 @@ pub fn generate_12edo_fnum_table<C: ChipSpec>(
     let mut fnum_table: [[Option<FNumberEntry>; 12]; 8] =
         std::array::from_fn(|_| std::array::from_fn(|_| None::<FNumberEntry>));
 
-    // Iterate over the table rows and columns using iterator-style loops to avoid range-indexing.
     for (block, row) in fnum_table.iter_mut().enumerate().take(max_block + 1) {
         for (semitone, slot) in row.iter_mut().enumerate() {
             let semitone_offset =
@@ -276,9 +275,7 @@ pub fn find_closest_fnumber<C: ChipSpec>(
 
     let mut best: Option<(FNumber, f64, f64)> = None;
 
-    // Use iterator-style nested loops to avoid indexing by range variables.
     for row in fnum_table.iter() {
-        // iterate only the `Some` entries
         for entry in row.iter().flatten() {
             let fnum = entry.1;
             let produced = fnum.actual_freq_hz;

@@ -2,9 +2,9 @@ use nanonanoda::pcm::{Peak, analyze_pcm_peaks, synthesize_sines};
 
 #[test]
 fn test_analyze_single_tone() {
-    let sample_rate = 44_100usize;
-    let window = 4096usize;
-    let freq = 1000.0f64;
+    let sample_rate: usize = 44100;
+    let window: usize = 4096;
+    let freq: f64 = 1000.0;
 
     fn generate_sine(freq_hz: f64, sample_rate: usize, len: usize) -> Vec<f32> {
         let mut v = vec![0.0f32; len];
@@ -34,9 +34,9 @@ fn test_analyze_single_tone() {
 
 #[test]
 fn test_synthesize_and_analyze() {
-    let sample_rate = 48_000usize;
-    let window = 4096usize;
-    let target = 1500.0f64;
+    let sample_rate: usize = 48000;
+    let window: usize = 4096;
+    let target: f64 = 1500.0;
 
     let peak = Peak {
         freq_hz: target,
@@ -60,9 +60,9 @@ fn test_synthesize_and_analyze() {
 
 #[test]
 fn test_synthesize_multi_peaks() {
-    let sample_rate = 48_000usize;
-    let window = 4096usize;
-    let targets = [220.0f64, 440.0f64, 880.0f64];
+    let sample_rate: usize = 48000;
+    let window: usize = 4096;
+    let targets = [220.0_f64, 440.0, 880.0];
 
     let peaks: Vec<Peak> = targets
         .iter()
@@ -92,12 +92,12 @@ fn test_synthesize_multi_peaks() {
 
 #[test]
 fn test_synthesize_multi_peaks_low_magnitude() {
-    let sample_rate = 48_000usize;
-    let window = 4096usize;
-    let targets = [220.0f64, 440.0f64, 880.0f64];
+    let sample_rate: usize = 48000;
+    let window: usize = 4096;
+    let targets = [220.0_f64, 440.0, 880.0];
 
     // Lower magnitudes for secondary peaks
-    let mags = [1.0f64, 0.3f64, 0.1f64];
+    let mags = [1.0_f64, 0.3, 0.1];
 
     let peaks: Vec<Peak> = targets
         .iter()

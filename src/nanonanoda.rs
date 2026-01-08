@@ -82,9 +82,7 @@ fn assign_peaks_to_chip_instances(
     let mut remaining: Vec<usize> = chip_instances.iter().map(|(_, v)| *v).collect();
     let mut out: Vec<Vec<SpectralFeature>> = vec![Vec::new(); total_instances];
 
-    // For each peak, find the best-fitting chip instance (min error cents) that still has slots.
     for peak in peaks.iter() {
-        // Build candidates
         let mut best: Option<(usize, SpectralFeature)> = None;
         for (idx, (chip, _voices)) in chip_instances.iter().enumerate() {
             if remaining[idx] == 0 {

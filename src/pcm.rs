@@ -83,7 +83,7 @@ pub fn analyze_pcm_peaks(samples: &[f32], sample_rate: usize, max_peaks: usize) 
 /// relative to the strongest peak to form amplitude weights. The final
 /// output is scaled to avoid clipping (max absolute value <= 0.95).
 pub fn synthesize_sines(peaks: &[Peak], sample_rate: usize, sample_count: usize) -> Vec<f32> {
-    let mut out = vec![0.0f32; sample_count];
+    let mut out = vec![0.0_f32; sample_count];
     if peaks.is_empty() || sample_rate == 0 || sample_count == 0 {
         return out;
     }
@@ -104,7 +104,7 @@ pub fn synthesize_sines(peaks: &[Peak], sample_rate: usize, sample_count: usize)
 
     for (sample_idx, slot) in out.iter_mut().enumerate().take(sample_count) {
         let t = sample_idx as f64;
-        let mut sum = 0.0f64;
+        let mut sum: f64 = 0.0;
         for (omega, amp) in &comps {
             sum += amp * (omega * t).sin();
         }
@@ -169,7 +169,7 @@ pub fn interleaved_to_mono<S: SampleToF32 + Copy>(samples: &[S], channels: usize
     let frames = samples.len() / channels;
     let mut out = Vec::with_capacity(frames);
     for frame_idx in 0..frames {
-        let mut acc = 0.0f32;
+        let mut acc: f32 = 0.0;
         for ch_idx in 0..channels {
             acc += samples[frame_idx * channels + ch_idx].to_f32_normalized();
         }

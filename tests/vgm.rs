@@ -21,13 +21,13 @@ fn test_to_bytes_waits_and_eof() {
     let file_size = bytes.len() as u32;
     assert_eq!(eof_offset, file_size.wrapping_sub(4));
 
-    let cmd_start = 0x100usize;
+    let cmd_start: usize = 0x100;
     assert!(bytes.len() >= cmd_start + 4);
 
     let seq = &bytes[cmd_start..];
-    assert_eq!(seq[0], 0x61u8);
-    assert_eq!(seq[1], 0xE8u8);
-    assert_eq!(seq[2], 0x03u8);
+    assert_eq!(seq[0], 0x61);
+    assert_eq!(seq[1], 0xE8);
+    assert_eq!(seq[2], 0x03);
 
     let found_seq = seq[3..].windows(3).position(|w| w == b"\x62\x63\x66");
     assert!(
@@ -104,7 +104,7 @@ fn test_ym2203_port1_write_encoding() {
     let doc = b.build();
 
     let bytes = doc.to_bytes();
-    let cmd_start = 0x100usize;
+    let cmd_start: usize = 0x100;
     assert!(bytes.len() > cmd_start + 3);
     let seq = &bytes[cmd_start..];
 
@@ -124,7 +124,7 @@ fn test_to_bytes_chip_writes() {
     let doc = b.build();
 
     let bytes = doc.to_bytes();
-    let cmd_start = 0x100usize;
+    let cmd_start: usize = 0x100;
     let seq = &bytes[cmd_start..];
 
     // find first sequence (YMF262 write)
