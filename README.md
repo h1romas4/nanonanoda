@@ -142,7 +142,7 @@ cargo test
 
 Sample Wave (`3:14` sec):
 
-```
+```bash
 # ffmpeg -i assets/voice/01.flac -acodec pcm_s16le -ar 44100 -ac 2 assets/voide/01.wav
 $ ls -laF assets/voice/01.wav
 -rw-rw-r-- 1 hiromasa hiromasa 34362990  1月  9 16:20 assets/voice/01.wav
