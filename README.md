@@ -140,7 +140,7 @@ cargo test
 
 ## Performance
 
-Sample Wave (3:14sec):
+Sample Wave (`3:14` sec):
 
 ```
 $ ls -laF assets/voice/01.wav
