@@ -135,3 +135,64 @@ Build and run tests:
 cargo build
 cargo test
 ```
+
+## Performance
+
+Sample Wave (3:14sec):
+
+```
+$ ls -laF assets/voice/01.wav
+-rw-rw-r-- 1 hiromasa hiromasa 34362990  1月  9 16:20 assets/voice/01.wav
+```
+
+Native:
+
+```bash
+$ time target/release/nanonanoda --format wav assets/voice/01.wav
+Reading input WAV: assets/voice/01.wav
+Resynth out path: "assets/voice/01_resynth.wav"
+Wrote resynth WAV for assets/voice/01.wav
+
+real    0m5.013s
+user    0m4.924s
+sys     0m0.089s
+```
+
+Wasmer:
+
+```bash
+$ time time wasmer run --mapdir /:./assets/voice target/wasm32-wasip1/release/nanonanoda.wasm /01.wav
+⠁ Compiling to WebAssembly                                                                                                                          Reading input WAV: /01.wav
+Resynth out path: "/01_resynth.wav"
+Wrote resynth WAV for /01.wav
+
+real    0m6.331s
+user    0m6.173s
+sys     0m0.210s
+```
+
+Wasmer (optimize): 
+
+```bash
+$ time wasmer run --llvm --enable-pass-params-opt --mapdir /:./assets/voice target/wasm32-wasip1/release/nanonanoda.wasm -- --format wav /01.wav
+⠁ Compiling to WebAssembly                                                                                                                          Reading input WAV: /01.wav
+Resynth out path: "/01_resynth.wav"
+Wrote resynth WAV for /01.wav
+
+real    0m5.611s
+user    0m5.437s
+sys     0m0.176s
+```
+
+wasmtime:
+
+```bash
+$ time wasmtime run --dir ./assets/voice::/ target/wasm32-wasip1/release/nanonanoda.wasm --format wav /01.wav
+Reading input WAV: /01.wav
+Resynth out path: "/01_resynth.wav"
+Wrote resynth WAV for /01.wav
+
+real    0m6.521s
+user    0m6.416s
+sys     0m0.101s
+```
