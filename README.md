@@ -86,36 +86,38 @@ curl -L -o nanonanoda.wasm https://github.com/h1romas4/nanonanoda/releases/lates
 Linux/macOS:
 
 ```sh
+# Wasmer
+curl https://get.wasmer.io -sSfL | sh
+# wasmtime
 curl https://wasmtime.dev/install.sh -sSf | bash
 ```
 
 Windows:
 
 ```powershell
+# Wasmer
+winget install --id=Wasmer.Wasmer -e
+# wasmtime
 winget install --id=BytecodeAlliance.Wasmtime -e
 ```
 
 ```bash
-wasmtime -V
+$ wasmer -V
+wasmer 6.1.0
+$ wasmtime -V
 wasmtime 40.0.0 (0807b003e 2025-12-22)
 ```
 
 - Run example (map host `./assets/voice` to guest `/` inside WASI):
 
 ```sh
-# Use host ./assets/voice/nanonanoda.wav as /nanonanoda.wav inside the WASI module
+# Wasmer
+# `--mapdir <GUEST_DIR:HOST_DIR>` maps a host directory into the WASI module.
+wasmer run --mapdir /:./assets/voice nanonanoda.wasm -- --format vgm /nanonanoda.wav
+# wasmtime
+# `--dir <HOST_DIR[::GUEST_DIR]>` maps a host directory into the WASI module.
 wasmtime run --dir ./assets/voice::/ nanonanoda.wasm --format vgm /nanonanoda.wav
 ```
-
-Note: `--dir <HOST_DIR[::GUEST_DIR]>` maps a host directory into the WASI module.
-
-- Wasmer:
-
-```
-wasmer run --mapdir /:./assets/voice nanonanoda.wasm -- --format vgm /nanonanoda.wav
-```
-
-Note: `--mapdir <GUEST_DIR:HOST_DIR>` maps a host directory into the WASI module.
 
 ## Build and test
 
@@ -171,7 +173,7 @@ user    0m6.173s
 sys     0m0.210s
 ```
 
-Wasmer (optimize): 
+Wasmer (AOT optimize): 
 
 ```bash
 $ time wasmer run --llvm --enable-pass-params-opt --mapdir /:./assets/voice target/wasm32-wasip1/release/nanonanoda.wasm -- --format wav /01.wav
