@@ -8,3 +8,9 @@ license = "MIT"
 hound = "3.5.1"
 rustfft = "6.4.1"
 clap = { version = "4", features = ["derive"] }
+soundlog = { path = "crates/soundlog" }
+
+[workspace]
+members = [
+    "crates/soundlog",
+]

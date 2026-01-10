@@ -129,6 +129,7 @@ dependencies = [
  "clap",
  "hound",
  "rustfft",
+ "soundlog",
 ]
 
 [[package]]
@@ -204,6 +205,10 @@ dependencies = [
  "strength_reduce",
  "transpose",
 ]
+
+[[package]]
+name = "soundlog"
+version = "0.1.0"
 
 [[package]]
 name = "strength_reduce"
