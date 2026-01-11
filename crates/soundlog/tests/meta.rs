@@ -40,7 +40,7 @@ fn test_gd3_to_bytes_fields() {
         expected.extend_from_slice(&0u16.to_le_bytes());
     }
 
-    assert_eq!(gd3_len, expected.len() as usize);
+    assert_eq!(gd3_len, expected.len());
     assert_eq!(&bytes[12..12 + expected.len()], &expected[..]);
 }
 
