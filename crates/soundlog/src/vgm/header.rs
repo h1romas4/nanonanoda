@@ -1,9 +1,8 @@
-use crate::binutil::{
-    ParseError, read_slice, read_u8_at, read_u16_le_at, read_u32_le_at, write_slice, write_u8,
-    write_u16, write_u32,
-};
+use crate::binutil::{write_slice, write_u8, write_u16, write_u32};
+use crate::vgm::parser;
+use std::convert::TryFrom;
 
-pub const VGM_V171_HEADER_SIZE: u32 = 0x100;
+pub(crate) const VGM_V171_HEADER_SIZE: u32 = 0x100;
 
 #[derive(Debug, Clone, PartialEq)]
 /// VGM file header fields and utilities for serialization.
@@ -144,7 +143,7 @@ impl Default for VgmHeader {
 }
 
 impl VgmHeader {
-    pub fn to_bytes(&self, gd3_offset: u32, data_offset: u32) -> Vec<u8> {
+    pub(crate) fn to_bytes(&self, gd3_offset: u32, data_offset: u32) -> Vec<u8> {
         let mut buf: Vec<u8> = vec![0; VGM_V171_HEADER_SIZE as usize];
         // ident (0x00)
         write_slice(&mut buf, 0x00, &self.ident);
@@ -276,113 +275,18 @@ impl VgmHeader {
         }
         buf
     }
+}
 
-    /// Parse a VGM header from `bytes`.
-    ///
-    /// Returns the parsed `VgmHeader` and the number of bytes consumed
-    /// for the header (the header size). This function performs strict
-    /// checks for the minimal header size and the `Vgm ` ident.
-    pub fn from_bytes(bytes: &[u8]) -> Result<(VgmHeader, usize), ParseError> {
-        // Require at least the 0x34 bytes present to read the data_offset
-        if bytes.len() < 0x34 {
-            return Err(ParseError::HeaderTooShort);
-        }
+/// Attempt to convert a raw VGM byte slice into a `VgmHeader`.
+///
+/// This is a fallible conversion that delegates to
+/// `crate::vgm::parser::parse_vgm_header` and returns a
+/// `crate::binutil::ParseError` on failure.
+impl TryFrom<&[u8]> for VgmHeader {
+    type Error = crate::binutil::ParseError;
 
-        let ident_slice = read_slice(bytes, 0x00, 4)?;
-        if ident_slice != b"Vgm " {
-            let mut id: [u8; 4] = [0; 4];
-            id.copy_from_slice(ident_slice);
-            return Err(ParseError::InvalidIdent(id));
-        }
-
-        let version = read_u32_le_at(bytes, 0x08)?;
-
-        // Read raw data_offset field (at 0x34). Writer treats 0 as
-        // the legacy default; mirror that interpretation here.
-        let data_offset_raw = read_u32_le_at(bytes, 0x34)?;
-        let data_offset = if data_offset_raw == 0 {
-            VGM_V171_HEADER_SIZE - 0x34
-        } else {
-            data_offset_raw
-        };
-
-        let header_size = 0x34usize.wrapping_add(data_offset as usize);
-        if bytes.len() < header_size {
-            return Err(ParseError::UnexpectedEof);
-        }
-
-        let mut h = VgmHeader::default();
-        // Core fields always present
-        h.ident.copy_from_slice(&bytes[0x00..0x04]);
-        h.eof_offset = read_u32_le_at(bytes, 0x04)?;
-        h.version = version;
-        h.sn76489_clock = read_u32_le_at(bytes, 0x0C)?;
-        h.ym2413_clock = read_u32_le_at(bytes, 0x10)?;
-        h.gd3_offset = read_u32_le_at(bytes, 0x14)?;
-        h.total_samples = read_u32_le_at(bytes, 0x18)?;
-        h.loop_offset = read_u32_le_at(bytes, 0x1C)?;
-        h.loop_samples = read_u32_le_at(bytes, 0x20)?;
-        h.sample_rate = read_u32_le_at(bytes, 0x24)?;
-        h.sn_fb = read_u16_le_at(bytes, 0x28)?;
-        h.snw = read_u8_at(bytes, 0x2A)?;
-        h.sf = read_u8_at(bytes, 0x2B)?;
-        h.ym2612_clock = read_u32_le_at(bytes, 0x2C)?;
-        h.ym2151_clock = read_u32_le_at(bytes, 0x30)?;
-        h.data_offset = data_offset_raw;
-
-        // Following fields are part of the extended header region.
-        h.sega_pcm_clock = read_u32_le_at(bytes, 0x38)?;
-        h.spcm_interface = read_u32_le_at(bytes, 0x3C)?;
-        h.rf5c68_clock = read_u32_le_at(bytes, 0x40)?;
-        h.ym2203_clock = read_u32_le_at(bytes, 0x44)?;
-        h.ym2608_clock = read_u32_le_at(bytes, 0x48)?;
-        h.ym2610b_clock = read_u32_le_at(bytes, 0x4C)?;
-        h.ym3812_clock = read_u32_le_at(bytes, 0x50)?;
-        h.ym3526_clock = read_u32_le_at(bytes, 0x54)?;
-        h.y8950_clock = read_u32_le_at(bytes, 0x58)?;
-        h.ymf262_clock = read_u32_le_at(bytes, 0x5C)?;
-        h.ymf278b_clock = read_u32_le_at(bytes, 0x60)?;
-        h.ymf271_clock = read_u32_le_at(bytes, 0x64)?;
-        h.ymz280b_clock = read_u32_le_at(bytes, 0x68)?;
-        h.rf5c164_clock = read_u32_le_at(bytes, 0x6C)?;
-        h.pwm_clock = read_u32_le_at(bytes, 0x70)?;
-        h.ay8910_clock = read_u32_le_at(bytes, 0x74)?;
-        let ay_misc_slice = read_slice(bytes, 0x78, 8)?;
-        h.ay_misc.copy_from_slice(ay_misc_slice);
-        h.gb_dmg_clock = read_u32_le_at(bytes, 0x80)?;
-        h.nes_apu_clock = read_u32_le_at(bytes, 0x84)?;
-        h.multipcm_clock = read_u32_le_at(bytes, 0x88)?;
-        h.upd7759_clock = read_u32_le_at(bytes, 0x8C)?;
-        h.okim6258_clock = read_u32_le_at(bytes, 0x90)?;
-        let ok_flags = read_slice(bytes, 0x94, 4)?;
-        h.okim6258_flags.copy_from_slice(ok_flags);
-        h.okim6295_clock = read_u32_le_at(bytes, 0x98)?;
-        h.k051649_clock = read_u32_le_at(bytes, 0x9C)?;
-        h.k054539_clock = read_u32_le_at(bytes, 0xA0)?;
-        h.huc6280_clock = read_u32_le_at(bytes, 0xA4)?;
-        h.c140_clock = read_u32_le_at(bytes, 0xA8)?;
-        h.k053260_clock = read_u32_le_at(bytes, 0xAC)?;
-        h.pokey_clock = read_u32_le_at(bytes, 0xB0)?;
-        h.qsound_clock = read_u32_le_at(bytes, 0xB4)?;
-        h.scsp_clock = read_u32_le_at(bytes, 0xB8)?;
-        h.extra_header_offset = read_u32_le_at(bytes, 0xBC)?;
-        h.wonderswan_clock = read_u32_le_at(bytes, 0xC0)?;
-        h.vsu_clock = read_u32_le_at(bytes, 0xC4)?;
-        h.saa1099_clock = read_u32_le_at(bytes, 0xC8)?;
-        h.es5503_clock = read_u32_le_at(bytes, 0xCC)?;
-        h.es5506_clock = read_u32_le_at(bytes, 0xD0)?;
-        h.es5506_channels = read_u16_le_at(bytes, 0xD4)?;
-        h.es5506_cd = read_u8_at(bytes, 0xD6)?;
-        h.es5506_reserved = read_u8_at(bytes, 0xD7)?;
-        h.x1_010_clock = read_u32_le_at(bytes, 0xD8)?;
-        h.c352_clock = read_u32_le_at(bytes, 0xDC)?;
-        h.ga20_clock = read_u32_le_at(bytes, 0xE0)?;
-        h.mikey_clock = read_u32_le_at(bytes, 0xE4)?;
-        let res_e8 = read_slice(bytes, 0xE8, 8)?;
-        h.reserved_e8_ef.copy_from_slice(res_e8);
-        let res_f0 = read_slice(bytes, 0xF0, 16)?;
-        h.reserved_f0_ff.copy_from_slice(res_f0);
-
-        Ok((h, header_size))
+    fn try_from(bytes: &[u8]) -> Result<Self, Self::Error> {
+        // Delegate to the parser and return its error instead of panicking.
+        parser::parse_vgm_header(bytes).map(|(h, _)| h)
     }
 }

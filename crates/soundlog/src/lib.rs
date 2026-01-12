@@ -1,15 +1,15 @@
 mod binutil;
 pub mod chip;
-mod meta;
+pub mod meta;
+mod tests;
 pub mod vgm;
 mod xgm;
 
-pub use chip::Chip;
-pub use meta::Gd3;
+pub use binutil::ParseError;
+pub use vgm::VgmHeader;
 pub use vgm::command::{
-    Ay8910StereoMask, ChipId, DataBlock, PcmRamWrite, SeekOffset, SetStreamFrequency,
-    SetupStreamControl, StartStream, StartStreamFastCall, StopStream, VgmCommand, WaitNSample,
-    WaitSamples, Ym2612Port0Address2AWriteAndWaitN,
+    Ay8910StereoMask, ChipId, DataBlock, EndOfData, PcmRamWrite, SeekOffset, SetStreamFrequency,
+    SetupStreamControl, StartStream, StartStreamFastCall, StopStream, VgmCommand, Wait735Samples,
+    Wait882Samples, WaitNSample, WaitSamples, Ym2612Port0Address2AWriteAndWaitN,
 };
-pub use vgm::doc::{VgmBuilder, VgmDocument};
-pub use vgm::header::VgmHeader;
+pub use vgm::{VgmBuilder, VgmDocument};

@@ -2,15 +2,17 @@ use crate::binutil::{
     ParseError, read_i32_le_at, read_slice, read_u8_at, read_u24_be_at, read_u32_le_at,
 };
 use crate::chip;
-use crate::vgm::doc::{VgmBuilder, VgmDocument};
 use crate::vgm::header::VGM_V171_HEADER_SIZE;
+use crate::vgm::model::VgmDocument;
 
+/// Chip instance identifier for VGM commands.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ChipId {
     Primary = 0x0,
     Secondary = 0x1,
 }
 
+/// Conversion between `usize` and `ChipId`.
 impl From<usize> for ChipId {
     fn from(v: usize) -> Self {
         match v {
@@ -21,6 +23,7 @@ impl From<usize> for ChipId {
     }
 }
 
+/// Conversion between `ChipId` and `usize`.
 impl From<ChipId> for usize {
     fn from(id: ChipId) -> Self {
         id as usize
@@ -93,7 +96,8 @@ pub enum VgmCommand {
     GameGearPsgWrite(ChipId, chip::GameGearPsgSpec),
 }
 
-pub trait CommandSpec {
+/// Trait for VGM command specifications.
+pub(crate) trait CommandSpec {
     fn opcode(&self) -> u8;
     fn to_vgm_bytes(&self, dest: &mut Vec<u8>);
     fn parse(bytes: &[u8], offset: usize, opcode: u8) -> Result<(Self, usize), ParseError>
@@ -651,277 +655,273 @@ impl From<SeekOffset> for VgmCommand {
     }
 }
 
-pub trait ChipWriteSpec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>);
-}
-
-impl ChipWriteSpec for chip::PsgSpec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::Sn76489Write(chip_id, self));
+impl From<(ChipId, chip::PsgSpec)> for VgmCommand {
+    fn from(v: (ChipId, chip::PsgSpec)) -> Self {
+        VgmCommand::Sn76489Write(v.0, v.1)
     }
 }
 
-impl ChipWriteSpec for chip::Ym2413Spec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::Ym2413Write(chip_id, self));
+impl From<(ChipId, chip::Ym2413Spec)> for VgmCommand {
+    fn from(v: (ChipId, chip::Ym2413Spec)) -> Self {
+        VgmCommand::Ym2413Write(v.0, v.1)
     }
 }
 
-impl ChipWriteSpec for chip::Ym2612Spec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::Ym2612Write(chip_id, self));
+impl From<(ChipId, chip::Ym2612Spec)> for VgmCommand {
+    fn from(v: (ChipId, chip::Ym2612Spec)) -> Self {
+        VgmCommand::Ym2612Write(v.0, v.1)
     }
 }
 
-impl ChipWriteSpec for chip::Ym2151Spec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::Ym2151Write(chip_id, self));
+impl From<(ChipId, chip::Ym2151Spec)> for VgmCommand {
+    fn from(v: (ChipId, chip::Ym2151Spec)) -> Self {
+        VgmCommand::Ym2151Write(v.0, v.1)
     }
 }
 
-impl ChipWriteSpec for chip::SegaPcmSpec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::SegaPcmWrite(chip_id, self));
+impl From<(ChipId, chip::SegaPcmSpec)> for VgmCommand {
+    fn from(v: (ChipId, chip::SegaPcmSpec)) -> Self {
+        VgmCommand::SegaPcmWrite(v.0, v.1)
     }
 }
 
-impl ChipWriteSpec for chip::Rf5c68Spec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::Rf5c68Write(chip_id, self));
+impl From<(ChipId, chip::Rf5c68Spec)> for VgmCommand {
+    fn from(v: (ChipId, chip::Rf5c68Spec)) -> Self {
+        VgmCommand::Rf5c68Write(v.0, v.1)
     }
 }
 
-impl ChipWriteSpec for chip::Ym2203Spec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::Ym2203Write(chip_id, self));
+impl From<(ChipId, chip::Ym2203Spec)> for VgmCommand {
+    fn from(v: (ChipId, chip::Ym2203Spec)) -> Self {
+        VgmCommand::Ym2203Write(v.0, v.1)
     }
 }
 
-impl ChipWriteSpec for chip::Ym2608Spec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::Ym2608Write(chip_id, self));
+impl From<(ChipId, chip::Ym2608Spec)> for VgmCommand {
+    fn from(v: (ChipId, chip::Ym2608Spec)) -> Self {
+        VgmCommand::Ym2608Write(v.0, v.1)
     }
 }
 
-impl ChipWriteSpec for chip::Ym2610Spec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::Ym2610bWrite(chip_id, self));
+impl From<(ChipId, chip::Ym2610Spec)> for VgmCommand {
+    fn from(v: (ChipId, chip::Ym2610Spec)) -> Self {
+        VgmCommand::Ym2610bWrite(v.0, v.1)
     }
 }
 
-impl ChipWriteSpec for chip::Ym3812Spec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::Ym3812Write(chip_id, self));
+impl From<(ChipId, chip::Ym3812Spec)> for VgmCommand {
+    fn from(v: (ChipId, chip::Ym3812Spec)) -> Self {
+        VgmCommand::Ym3812Write(v.0, v.1)
     }
 }
 
-impl ChipWriteSpec for chip::Ym3526Spec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::Ym3526Write(chip_id, self));
+impl From<(ChipId, chip::Ym3526Spec)> for VgmCommand {
+    fn from(v: (ChipId, chip::Ym3526Spec)) -> Self {
+        VgmCommand::Ym3526Write(v.0, v.1)
     }
 }
 
-impl ChipWriteSpec for chip::Y8950Spec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::Y8950Write(chip_id, self));
+impl From<(ChipId, chip::Y8950Spec)> for VgmCommand {
+    fn from(v: (ChipId, chip::Y8950Spec)) -> Self {
+        VgmCommand::Y8950Write(v.0, v.1)
     }
 }
 
-impl ChipWriteSpec for chip::Ymf262Spec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::Ymf262Write(chip_id, self));
+impl From<(ChipId, chip::Ymf262Spec)> for VgmCommand {
+    fn from(v: (ChipId, chip::Ymf262Spec)) -> Self {
+        VgmCommand::Ymf262Write(v.0, v.1)
     }
 }
 
-impl ChipWriteSpec for chip::Ymf278bSpec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::Ymf278bWrite(chip_id, self));
+impl From<(ChipId, chip::Ymf278bSpec)> for VgmCommand {
+    fn from(v: (ChipId, chip::Ymf278bSpec)) -> Self {
+        VgmCommand::Ymf278bWrite(v.0, v.1)
     }
 }
 
-impl ChipWriteSpec for chip::Ymf271Spec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::Ymf271Write(chip_id, self));
+impl From<(ChipId, chip::Ymf271Spec)> for VgmCommand {
+    fn from(v: (ChipId, chip::Ymf271Spec)) -> Self {
+        VgmCommand::Ymf271Write(v.0, v.1)
     }
 }
 
-impl ChipWriteSpec for chip::Scc1Spec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::Scc1Write(chip_id, self));
+impl From<(ChipId, chip::Scc1Spec)> for VgmCommand {
+    fn from(v: (ChipId, chip::Scc1Spec)) -> Self {
+        VgmCommand::Scc1Write(v.0, v.1)
     }
 }
 
-impl ChipWriteSpec for chip::Ymz280bSpec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::Ymz280bWrite(chip_id, self));
+impl From<(ChipId, chip::Ymz280bSpec)> for VgmCommand {
+    fn from(v: (ChipId, chip::Ymz280bSpec)) -> Self {
+        VgmCommand::Ymz280bWrite(v.0, v.1)
     }
 }
 
-impl ChipWriteSpec for chip::Rf5c164Spec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::Rf5c164Write(chip_id, self));
+impl From<(ChipId, chip::Rf5c164Spec)> for VgmCommand {
+    fn from(v: (ChipId, chip::Rf5c164Spec)) -> Self {
+        VgmCommand::Rf5c164Write(v.0, v.1)
     }
 }
 
-impl ChipWriteSpec for chip::PwmSpec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::PwmWrite(chip_id, self));
+impl From<(ChipId, chip::PwmSpec)> for VgmCommand {
+    fn from(v: (ChipId, chip::PwmSpec)) -> Self {
+        VgmCommand::PwmWrite(v.0, v.1)
     }
 }
 
-impl ChipWriteSpec for chip::Ay8910Spec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::Ay8910Write(chip_id, self));
+impl From<(ChipId, chip::Ay8910Spec)> for VgmCommand {
+    fn from(v: (ChipId, chip::Ay8910Spec)) -> Self {
+        VgmCommand::Ay8910Write(v.0, v.1)
     }
 }
 
-impl ChipWriteSpec for chip::GbDmgSpec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::GbDmgWrite(chip_id, self));
+impl From<(ChipId, chip::GbDmgSpec)> for VgmCommand {
+    fn from(v: (ChipId, chip::GbDmgSpec)) -> Self {
+        VgmCommand::GbDmgWrite(v.0, v.1)
     }
 }
 
-impl ChipWriteSpec for chip::NesApuSpec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::NesApuWrite(chip_id, self));
+impl From<(ChipId, chip::NesApuSpec)> for VgmCommand {
+    fn from(v: (ChipId, chip::NesApuSpec)) -> Self {
+        VgmCommand::NesApuWrite(v.0, v.1)
     }
 }
 
-impl ChipWriteSpec for chip::MultiPcmSpec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::MultiPcmWrite(chip_id, self));
+impl From<(ChipId, chip::MultiPcmSpec)> for VgmCommand {
+    fn from(v: (ChipId, chip::MultiPcmSpec)) -> Self {
+        VgmCommand::MultiPcmWrite(v.0, v.1)
     }
 }
 
-impl ChipWriteSpec for chip::Upd7759Spec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::Upd7759Write(chip_id, self));
+impl From<(ChipId, chip::Upd7759Spec)> for VgmCommand {
+    fn from(v: (ChipId, chip::Upd7759Spec)) -> Self {
+        VgmCommand::Upd7759Write(v.0, v.1)
     }
 }
 
-impl ChipWriteSpec for chip::Okim6258Spec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::Okim6258Write(chip_id, self));
+impl From<(ChipId, chip::Okim6258Spec)> for VgmCommand {
+    fn from(v: (ChipId, chip::Okim6258Spec)) -> Self {
+        VgmCommand::Okim6258Write(v.0, v.1)
     }
 }
 
-impl ChipWriteSpec for chip::Okim6295Spec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::Okim6295Write(chip_id, self));
+impl From<(ChipId, chip::Okim6295Spec)> for VgmCommand {
+    fn from(v: (ChipId, chip::Okim6295Spec)) -> Self {
+        VgmCommand::Okim6295Write(v.0, v.1)
     }
 }
 
-impl ChipWriteSpec for chip::K051649Spec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::K051649Write(chip_id, self));
+impl From<(ChipId, chip::K051649Spec)> for VgmCommand {
+    fn from(v: (ChipId, chip::K051649Spec)) -> Self {
+        VgmCommand::K051649Write(v.0, v.1)
     }
 }
 
-impl ChipWriteSpec for chip::K054539Spec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::K054539Write(chip_id, self));
+impl From<(ChipId, chip::K054539Spec)> for VgmCommand {
+    fn from(v: (ChipId, chip::K054539Spec)) -> Self {
+        VgmCommand::K054539Write(v.0, v.1)
     }
 }
 
-impl ChipWriteSpec for chip::Huc6280Spec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::Huc6280Write(chip_id, self));
+impl From<(ChipId, chip::Huc6280Spec)> for VgmCommand {
+    fn from(v: (ChipId, chip::Huc6280Spec)) -> Self {
+        VgmCommand::Huc6280Write(v.0, v.1)
     }
 }
 
-impl ChipWriteSpec for chip::C140Spec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::C140Write(chip_id, self));
+impl From<(ChipId, chip::C140Spec)> for VgmCommand {
+    fn from(v: (ChipId, chip::C140Spec)) -> Self {
+        VgmCommand::C140Write(v.0, v.1)
     }
 }
 
-impl ChipWriteSpec for chip::K053260Spec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::K053260Write(chip_id, self));
+impl From<(ChipId, chip::K053260Spec)> for VgmCommand {
+    fn from(v: (ChipId, chip::K053260Spec)) -> Self {
+        VgmCommand::K053260Write(v.0, v.1)
     }
 }
 
-impl ChipWriteSpec for chip::PokeySpec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::PokeyWrite(chip_id, self));
+impl From<(ChipId, chip::PokeySpec)> for VgmCommand {
+    fn from(v: (ChipId, chip::PokeySpec)) -> Self {
+        VgmCommand::PokeyWrite(v.0, v.1)
     }
 }
 
-impl ChipWriteSpec for chip::QsoundSpec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::QsoundWrite(chip_id, self));
+impl From<(ChipId, chip::QsoundSpec)> for VgmCommand {
+    fn from(v: (ChipId, chip::QsoundSpec)) -> Self {
+        VgmCommand::QsoundWrite(v.0, v.1)
     }
 }
 
-impl ChipWriteSpec for chip::ScspSpec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::ScspWrite(chip_id, self));
+impl From<(ChipId, chip::ScspSpec)> for VgmCommand {
+    fn from(v: (ChipId, chip::ScspSpec)) -> Self {
+        VgmCommand::ScspWrite(v.0, v.1)
     }
 }
 
-impl ChipWriteSpec for chip::WonderSwanSpec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::WonderSwanWrite(chip_id, self));
+impl From<(ChipId, chip::WonderSwanSpec)> for VgmCommand {
+    fn from(v: (ChipId, chip::WonderSwanSpec)) -> Self {
+        VgmCommand::WonderSwanWrite(v.0, v.1)
     }
 }
 
-impl ChipWriteSpec for chip::VsuSpec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::VsuWrite(chip_id, self));
+impl From<(ChipId, chip::VsuSpec)> for VgmCommand {
+    fn from(v: (ChipId, chip::VsuSpec)) -> Self {
+        VgmCommand::VsuWrite(v.0, v.1)
     }
 }
 
-impl ChipWriteSpec for chip::Saa1099Spec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::Saa1099Write(chip_id, self));
+impl From<(ChipId, chip::Saa1099Spec)> for VgmCommand {
+    fn from(v: (ChipId, chip::Saa1099Spec)) -> Self {
+        VgmCommand::Saa1099Write(v.0, v.1)
     }
 }
 
-impl ChipWriteSpec for chip::Es5503Spec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::Es5503Write(chip_id, self));
+impl From<(ChipId, chip::Es5503Spec)> for VgmCommand {
+    fn from(v: (ChipId, chip::Es5503Spec)) -> Self {
+        VgmCommand::Es5503Write(v.0, v.1)
     }
 }
 
-impl ChipWriteSpec for chip::Es5506v8Spec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::Es5506v8Write(chip_id, self));
+impl From<(ChipId, chip::Es5506v8Spec)> for VgmCommand {
+    fn from(v: (ChipId, chip::Es5506v8Spec)) -> Self {
+        VgmCommand::Es5506v8Write(v.0, v.1)
     }
 }
 
-impl ChipWriteSpec for chip::Es5506v16Spec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::Es5506v16Write(chip_id, self));
+impl From<(ChipId, chip::Es5506v16Spec)> for VgmCommand {
+    fn from(v: (ChipId, chip::Es5506v16Spec)) -> Self {
+        VgmCommand::Es5506v16Write(v.0, v.1)
     }
 }
 
-impl ChipWriteSpec for chip::X1010Spec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::X1010Write(chip_id, self));
+impl From<(ChipId, chip::X1010Spec)> for VgmCommand {
+    fn from(v: (ChipId, chip::X1010Spec)) -> Self {
+        VgmCommand::X1010Write(v.0, v.1)
     }
 }
 
-impl ChipWriteSpec for chip::C352Spec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::C352Write(chip_id, self));
+impl From<(ChipId, chip::C352Spec)> for VgmCommand {
+    fn from(v: (ChipId, chip::C352Spec)) -> Self {
+        VgmCommand::C352Write(v.0, v.1)
     }
 }
 
-impl ChipWriteSpec for chip::Ga20Spec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::Ga20Write(chip_id, self));
+impl From<(ChipId, chip::Ga20Spec)> for VgmCommand {
+    fn from(v: (ChipId, chip::Ga20Spec)) -> Self {
+        VgmCommand::Ga20Write(v.0, v.1)
     }
 }
 
-impl ChipWriteSpec for chip::MikeySpec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::MikeyWrite(chip_id, self));
+impl From<(ChipId, chip::MikeySpec)> for VgmCommand {
+    fn from(v: (ChipId, chip::MikeySpec)) -> Self {
+        VgmCommand::MikeyWrite(v.0, v.1)
     }
 }
 
-impl ChipWriteSpec for chip::GameGearPsgSpec {
-    fn write(self, chip_id: ChipId, cmds: &mut Vec<VgmCommand>) {
-        cmds.push(VgmCommand::GameGearPsgWrite(chip_id, self));
+impl From<(ChipId, chip::GameGearPsgSpec)> for VgmCommand {
+    fn from(v: (ChipId, chip::GameGearPsgSpec)) -> Self {
+        VgmCommand::GameGearPsgWrite(v.0, v.1)
     }
 }
 
@@ -2061,14 +2061,8 @@ impl CommandSpec for chip::GameGearPsgSpec {
     }
 }
 
-impl Default for VgmBuilder {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl VgmDocument {
-    pub fn to_bytes(&self) -> Vec<u8> {
+    pub(crate) fn to_bytes(&self) -> Vec<u8> {
         fn adjust_opcode_for_chip_id(instance_id: ChipId, opcode: u8) -> u8 {
             match instance_id {
                 ChipId::Primary => opcode,
@@ -2076,7 +2070,7 @@ impl VgmDocument {
             }
         }
 
-        fn emit_chip<C: CommandSpec + ?Sized>(id: ChipId, spec: &C, cmd_buf: &mut Vec<u8>) {
+        fn to_vgm_bytes<C: CommandSpec + ?Sized>(id: ChipId, spec: &C, cmd_buf: &mut Vec<u8>) {
             let start = cmd_buf.len();
             spec.to_vgm_bytes(cmd_buf);
             cmd_buf[start] = adjust_opcode_for_chip_id(id, cmd_buf[start]);
@@ -2102,51 +2096,51 @@ impl VgmDocument {
                 VgmCommand::StopStream(s) => s.to_vgm_bytes(&mut cmd_buf),
                 VgmCommand::StartStreamFastCall(s) => s.to_vgm_bytes(&mut cmd_buf),
                 VgmCommand::SeekOffset(s) => s.to_vgm_bytes(&mut cmd_buf),
-                VgmCommand::Sn76489Write(id, s) => emit_chip(*id, s, &mut cmd_buf),
-                VgmCommand::Ym2413Write(id, s) => emit_chip(*id, s, &mut cmd_buf),
-                VgmCommand::Ym2612Write(id, s) => emit_chip(*id, s, &mut cmd_buf),
-                VgmCommand::Ym2151Write(id, s) => emit_chip(*id, s, &mut cmd_buf),
-                VgmCommand::SegaPcmWrite(id, s) => emit_chip(*id, s, &mut cmd_buf),
-                VgmCommand::Rf5c68Write(id, s) => emit_chip(*id, s, &mut cmd_buf),
-                VgmCommand::Ym2203Write(id, s) => emit_chip(*id, s, &mut cmd_buf),
-                VgmCommand::Ym2608Write(id, s) => emit_chip(*id, s, &mut cmd_buf),
-                VgmCommand::Ym2610bWrite(id, s) => emit_chip(*id, s, &mut cmd_buf),
-                VgmCommand::Ym3812Write(id, s) => emit_chip(*id, s, &mut cmd_buf),
-                VgmCommand::Ym3526Write(id, s) => emit_chip(*id, s, &mut cmd_buf),
-                VgmCommand::Y8950Write(id, s) => emit_chip(*id, s, &mut cmd_buf),
-                VgmCommand::Ymf262Write(id, s) => emit_chip(*id, s, &mut cmd_buf),
-                VgmCommand::Ymf278bWrite(id, s) => emit_chip(*id, s, &mut cmd_buf),
-                VgmCommand::Ymf271Write(id, s) => emit_chip(*id, s, &mut cmd_buf),
-                VgmCommand::Scc1Write(id, s) => emit_chip(*id, s, &mut cmd_buf),
-                VgmCommand::Ymz280bWrite(id, s) => emit_chip(*id, s, &mut cmd_buf),
-                VgmCommand::Rf5c164Write(id, s) => emit_chip(*id, s, &mut cmd_buf),
-                VgmCommand::PwmWrite(id, s) => emit_chip(*id, s, &mut cmd_buf),
-                VgmCommand::Ay8910Write(id, s) => emit_chip(*id, s, &mut cmd_buf),
-                VgmCommand::GbDmgWrite(id, s) => emit_chip(*id, s, &mut cmd_buf),
-                VgmCommand::NesApuWrite(id, s) => emit_chip(*id, s, &mut cmd_buf),
-                VgmCommand::MultiPcmWrite(id, s) => emit_chip(*id, s, &mut cmd_buf),
-                VgmCommand::Upd7759Write(id, s) => emit_chip(*id, s, &mut cmd_buf),
-                VgmCommand::Okim6258Write(id, s) => emit_chip(*id, s, &mut cmd_buf),
-                VgmCommand::Okim6295Write(id, s) => emit_chip(*id, s, &mut cmd_buf),
-                VgmCommand::K051649Write(id, s) => emit_chip(*id, s, &mut cmd_buf),
-                VgmCommand::K054539Write(id, s) => emit_chip(*id, s, &mut cmd_buf),
-                VgmCommand::Huc6280Write(id, s) => emit_chip(*id, s, &mut cmd_buf),
-                VgmCommand::C140Write(id, s) => emit_chip(*id, s, &mut cmd_buf),
-                VgmCommand::K053260Write(id, s) => emit_chip(*id, s, &mut cmd_buf),
-                VgmCommand::PokeyWrite(id, s) => emit_chip(*id, s, &mut cmd_buf),
-                VgmCommand::QsoundWrite(id, s) => emit_chip(*id, s, &mut cmd_buf),
-                VgmCommand::ScspWrite(id, s) => emit_chip(*id, s, &mut cmd_buf),
-                VgmCommand::WonderSwanWrite(id, s) => emit_chip(*id, s, &mut cmd_buf),
-                VgmCommand::VsuWrite(id, s) => emit_chip(*id, s, &mut cmd_buf),
-                VgmCommand::Saa1099Write(id, s) => emit_chip(*id, s, &mut cmd_buf),
-                VgmCommand::Es5503Write(id, s) => emit_chip(*id, s, &mut cmd_buf),
-                VgmCommand::Es5506v8Write(id, s) => emit_chip(*id, s, &mut cmd_buf),
-                VgmCommand::Es5506v16Write(id, s) => emit_chip(*id, s, &mut cmd_buf),
-                VgmCommand::X1010Write(id, s) => emit_chip(*id, s, &mut cmd_buf),
-                VgmCommand::C352Write(id, s) => emit_chip(*id, s, &mut cmd_buf),
-                VgmCommand::Ga20Write(id, s) => emit_chip(*id, s, &mut cmd_buf),
-                VgmCommand::MikeyWrite(id, s) => emit_chip(*id, s, &mut cmd_buf),
-                VgmCommand::GameGearPsgWrite(id, s) => emit_chip(*id, s, &mut cmd_buf),
+                VgmCommand::Sn76489Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
+                VgmCommand::Ym2413Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
+                VgmCommand::Ym2612Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
+                VgmCommand::Ym2151Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
+                VgmCommand::SegaPcmWrite(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
+                VgmCommand::Rf5c68Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
+                VgmCommand::Ym2203Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
+                VgmCommand::Ym2608Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
+                VgmCommand::Ym2610bWrite(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
+                VgmCommand::Ym3812Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
+                VgmCommand::Ym3526Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
+                VgmCommand::Y8950Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
+                VgmCommand::Ymf262Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
+                VgmCommand::Ymf278bWrite(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
+                VgmCommand::Ymf271Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
+                VgmCommand::Scc1Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
+                VgmCommand::Ymz280bWrite(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
+                VgmCommand::Rf5c164Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
+                VgmCommand::PwmWrite(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
+                VgmCommand::Ay8910Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
+                VgmCommand::GbDmgWrite(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
+                VgmCommand::NesApuWrite(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
+                VgmCommand::MultiPcmWrite(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
+                VgmCommand::Upd7759Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
+                VgmCommand::Okim6258Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
+                VgmCommand::Okim6295Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
+                VgmCommand::K051649Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
+                VgmCommand::K054539Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
+                VgmCommand::Huc6280Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
+                VgmCommand::C140Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
+                VgmCommand::K053260Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
+                VgmCommand::PokeyWrite(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
+                VgmCommand::QsoundWrite(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
+                VgmCommand::ScspWrite(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
+                VgmCommand::WonderSwanWrite(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
+                VgmCommand::VsuWrite(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
+                VgmCommand::Saa1099Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
+                VgmCommand::Es5503Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
+                VgmCommand::Es5506v8Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
+                VgmCommand::Es5506v16Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
+                VgmCommand::X1010Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
+                VgmCommand::C352Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
+                VgmCommand::Ga20Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
+                VgmCommand::MikeyWrite(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
+                VgmCommand::GameGearPsgWrite(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
             }
         }
 
@@ -2194,284 +2188,5 @@ impl VgmDocument {
         buf[0x04..0x08].copy_from_slice(&eof_bytes);
 
         buf
-    }
-}
-
-// Parse error and byte-read helpers live in `binutils.rs`.
-fn parse_chip_write(
-    base: u8,
-    instance: ChipId,
-    bytes: &[u8],
-    off: usize,
-) -> Result<(VgmCommand, usize), ParseError> {
-    // return a VgmCommand containing the chip write with `instance` and
-    // number of bytes consumed from `off`.
-    match base {
-        0x50 => {
-            let (spec, n) = chip::PsgSpec::parse(bytes, off, base)?;
-            Ok((VgmCommand::Sn76489Write(instance, spec), n))
-        }
-        0x51 => {
-            let (spec, n) = chip::Ym2413Spec::parse(bytes, off, base)?;
-            Ok((VgmCommand::Ym2413Write(instance, spec), n))
-        }
-        0x52 | 0x53 => {
-            let (spec, n) = chip::Ym2612Spec::parse(bytes, off, base)?;
-            Ok((VgmCommand::Ym2612Write(instance, spec), n))
-        }
-        0x54 => {
-            let (spec, n) = chip::Ym2151Spec::parse(bytes, off, base)?;
-            Ok((VgmCommand::Ym2151Write(instance, spec), n))
-        }
-        0x55 => {
-            let (spec, n) = chip::Ym2203Spec::parse(bytes, off, base)?;
-            Ok((VgmCommand::Ym2203Write(instance, spec), n))
-        }
-        0x56 | 0x57 => {
-            let (spec, n) = chip::Ym2608Spec::parse(bytes, off, base)?;
-            Ok((VgmCommand::Ym2608Write(instance, spec), n))
-        }
-        0x58 | 0x59 => {
-            let (spec, n) = chip::Ym2610Spec::parse(bytes, off, base)?;
-            Ok((VgmCommand::Ym2610bWrite(instance, spec), n))
-        }
-        0x5A => {
-            let (spec, n) = chip::Ym3812Spec::parse(bytes, off, base)?;
-            Ok((VgmCommand::Ym3812Write(instance, spec), n))
-        }
-        0x5B => {
-            let (spec, n) = chip::Ym3526Spec::parse(bytes, off, base)?;
-            Ok((VgmCommand::Ym3526Write(instance, spec), n))
-        }
-        0x5C => {
-            let (spec, n) = chip::Y8950Spec::parse(bytes, off, base)?;
-            Ok((VgmCommand::Y8950Write(instance, spec), n))
-        }
-        0x5D => {
-            let (spec, n) = chip::Ymz280bSpec::parse(bytes, off, base)?;
-            Ok((VgmCommand::Ymz280bWrite(instance, spec), n))
-        }
-        0x5E | 0x5F => {
-            let (spec, n) = chip::Ymf262Spec::parse(bytes, off, base)?;
-            Ok((VgmCommand::Ymf262Write(instance, spec), n))
-        }
-        0xC0 => {
-            let (spec, n) = chip::SegaPcmSpec::parse(bytes, off, base)?;
-            Ok((VgmCommand::SegaPcmWrite(instance, spec), n))
-        }
-        0xC1 => {
-            let (spec, n) = chip::Rf5c68Spec::parse(bytes, off, base)?;
-            Ok((VgmCommand::Rf5c68Write(instance, spec), n))
-        }
-        0xB2 => {
-            let (spec, n) = chip::PwmSpec::parse(bytes, off, base)?;
-            Ok((VgmCommand::PwmWrite(instance, spec), n))
-        }
-        0xA0 => {
-            let (spec, n) = chip::Ay8910Spec::parse(bytes, off, base)?;
-            Ok((VgmCommand::Ay8910Write(instance, spec), n))
-        }
-        0xB3 => {
-            let (spec, n) = chip::GbDmgSpec::parse(bytes, off, base)?;
-            Ok((VgmCommand::GbDmgWrite(instance, spec), n))
-        }
-        0xB4 => {
-            let (spec, n) = chip::NesApuSpec::parse(bytes, off, base)?;
-            Ok((VgmCommand::NesApuWrite(instance, spec), n))
-        }
-        0xB5 => {
-            let (spec, n) = chip::MultiPcmSpec::parse(bytes, off, base)?;
-            Ok((VgmCommand::MultiPcmWrite(instance, spec), n))
-        }
-        0xB6 => {
-            let (spec, n) = chip::Upd7759Spec::parse(bytes, off, base)?;
-            Ok((VgmCommand::Upd7759Write(instance, spec), n))
-        }
-        0xB7 => {
-            let (spec, n) = chip::Okim6258Spec::parse(bytes, off, base)?;
-            Ok((VgmCommand::Okim6258Write(instance, spec), n))
-        }
-        0xB8 => {
-            let (spec, n) = chip::Okim6295Spec::parse(bytes, off, base)?;
-            Ok((VgmCommand::Okim6295Write(instance, spec), n))
-        }
-        0xD0 => {
-            let (spec, n) = chip::Ymf278bSpec::parse(bytes, off, base)?;
-            Ok((VgmCommand::Ymf278bWrite(instance, spec), n))
-        }
-        0xD1 => {
-            let (spec, n) = chip::Ymf271Spec::parse(bytes, off, base)?;
-            Ok((VgmCommand::Ymf271Write(instance, spec), n))
-        }
-        0xD2 => {
-            let (spec, n) = chip::Scc1Spec::parse(bytes, off, base)?;
-            Ok((VgmCommand::Scc1Write(instance, spec), n))
-        }
-        0xD3 => {
-            let (spec, n) = chip::K054539Spec::parse(bytes, off, base)?;
-            Ok((VgmCommand::K054539Write(instance, spec), n))
-        }
-        0xD4 => {
-            let (spec, n) = chip::C140Spec::parse(bytes, off, base)?;
-            Ok((VgmCommand::C140Write(instance, spec), n))
-        }
-        0xD5 => {
-            let (spec, n) = chip::Es5503Spec::parse(bytes, off, base)?;
-            Ok((VgmCommand::Es5503Write(instance, spec), n))
-        }
-        0xBE => {
-            let (spec, n) = chip::Es5506v8Spec::parse(bytes, off, base)?;
-            Ok((VgmCommand::Es5506v8Write(instance, spec), n))
-        }
-        0xD6 => {
-            let (spec, n) = chip::Es5506v16Spec::parse(bytes, off, base)?;
-            Ok((VgmCommand::Es5506v16Write(instance, spec), n))
-        }
-        0xC4 => {
-            let (spec, n) = chip::QsoundSpec::parse(bytes, off, base)?;
-            Ok((VgmCommand::QsoundWrite(instance, spec), n))
-        }
-        0xC5 => {
-            let (spec, n) = chip::ScspSpec::parse(bytes, off, base)?;
-            Ok((VgmCommand::ScspWrite(instance, spec), n))
-        }
-        0xC6 => {
-            let (spec, n) = chip::WonderSwanSpec::parse(bytes, off, base)?;
-            Ok((VgmCommand::WonderSwanWrite(instance, spec), n))
-        }
-        0xC7 => {
-            let (spec, n) = chip::VsuSpec::parse(bytes, off, base)?;
-            Ok((VgmCommand::VsuWrite(instance, spec), n))
-        }
-        0xC8 => {
-            let (spec, n) = chip::X1010Spec::parse(bytes, off, base)?;
-            Ok((VgmCommand::X1010Write(instance, spec), n))
-        }
-        0xE1 => {
-            let (spec, n) = chip::C352Spec::parse(bytes, off, base)?;
-            Ok((VgmCommand::C352Write(instance, spec), n))
-        }
-        0xBF => {
-            let (spec, n) = chip::Ga20Spec::parse(bytes, off, base)?;
-            Ok((VgmCommand::Ga20Write(instance, spec), n))
-        }
-        0x40 => {
-            let (spec, n) = chip::MikeySpec::parse(bytes, off, base)?;
-            Ok((VgmCommand::MikeyWrite(instance, spec), n))
-        }
-        0x4F => {
-            let (spec, n) = chip::GameGearPsgSpec::parse(bytes, off, base)?;
-            Ok((VgmCommand::GameGearPsgWrite(instance, spec), n))
-        }
-        _ => Err(ParseError::Other(format!(
-            "unknown chip base opcode {:#X}",
-            base
-        ))),
-    }
-}
-
-impl VgmCommand {
-    /// Parse a single VGM command starting at `off` in `bytes`.
-    /// Returns the parsed `VgmCommand` and the number of bytes consumed.
-    pub fn from_bytes(bytes: &[u8], off: usize) -> Result<(VgmCommand, usize), ParseError> {
-        let opcode = read_u8_at(bytes, off)?;
-        let mut cur = off + 1;
-        match opcode {
-            0x31 => {
-                let (v, n) = Ay8910StereoMask::parse(bytes, cur, opcode)?;
-                Ok((VgmCommand::AY8910StereoMask(v), 1 + n))
-            }
-            0x61 => {
-                let (v, n) = WaitSamples::parse(bytes, cur, opcode)?;
-                Ok((VgmCommand::WaitSamples(v), 1 + n))
-            }
-            0x62 => {
-                let (v, n) = Wait735Samples::parse(bytes, cur, opcode)?;
-                Ok((VgmCommand::Wait735Samples(v), 1 + n))
-            }
-            0x63 => {
-                let (v, n) = Wait882Samples::parse(bytes, cur, opcode)?;
-                Ok((VgmCommand::Wait882Samples(v), 1 + n))
-            }
-            0x66 => {
-                let (v, n) = EndOfData::parse(bytes, cur, opcode)?;
-                Ok((VgmCommand::EndOfData(v), 1 + n))
-            }
-            0x67 => {
-                // expect 0x66 next, then hand off to DataBlock::parse which expects
-                // to be called at the byte after the marker.
-                let marker = read_u8_at(bytes, cur)?;
-                cur += 1;
-                if marker != 0x66 {
-                    return Err(ParseError::Other("invalid data block marker".into()));
-                }
-                let (db, n) = DataBlock::parse(bytes, cur, opcode)?;
-                cur += n;
-                Ok((VgmCommand::DataBlock(db), cur - off))
-            }
-            0x68 => {
-                // expect 0x66 then chip_type then 3*24-bit fields + data
-                let marker = read_u8_at(bytes, cur)?;
-                cur += 1;
-                if marker != 0x66 {
-                    return Err(ParseError::Other("invalid pcm ram write marker".into()));
-                }
-                let (pr, n) = PcmRamWrite::parse(bytes, cur, opcode)?;
-                cur += n;
-                Ok((VgmCommand::PcmRamWrite(pr), cur - off))
-            }
-            0x70..=0x7F => {
-                let (v, n) = WaitNSample::parse(bytes, cur, opcode)?;
-                Ok((VgmCommand::WaitNSample(v), 1 + n))
-            }
-            0x80..=0x8F => {
-                let (v, n) = Ym2612Port0Address2AWriteAndWaitN::parse(bytes, cur, opcode)?;
-                Ok((VgmCommand::YM2612Port0Address2AWriteAndWaitN(v), 1 + n))
-            }
-            0x90 => {
-                let (v, n) = SetupStreamControl::parse(bytes, cur, opcode)?;
-                Ok((VgmCommand::SetupStreamControl(v), 1 + n))
-            }
-            0x91 => {
-                let (v, n) = SetStreamData::parse(bytes, cur, opcode)?;
-                Ok((VgmCommand::SetStreamData(v), 1 + n))
-            }
-            0x92 => {
-                let (v, n) = SetStreamFrequency::parse(bytes, cur, opcode)?;
-                Ok((VgmCommand::SetStreamFrequency(v), 1 + n))
-            }
-            0x93 => {
-                let (v, n) = StartStream::parse(bytes, cur, opcode)?;
-                Ok((VgmCommand::StartStream(v), 1 + n))
-            }
-            0x94 => {
-                let (v, n) = StopStream::parse(bytes, cur, opcode)?;
-                Ok((VgmCommand::StopStream(v), 1 + n))
-            }
-            0x95 => {
-                let (v, n) = StartStreamFastCall::parse(bytes, cur, opcode)?;
-                Ok((VgmCommand::StartStreamFastCall(v), 1 + n))
-            }
-            0xE0 => {
-                let (v, n) = SeekOffset::parse(bytes, cur, opcode)?;
-                Ok((VgmCommand::SeekOffset(v), 1 + n))
-            }
-            other => {
-                // Try to parse as a chip write (primary or secondary instance).
-                for &instance in &[ChipId::Primary, ChipId::Secondary] {
-                    let base = match instance {
-                        ChipId::Primary => other,
-                        ChipId::Secondary => other.wrapping_sub(0x50),
-                    };
-                    match parse_chip_write(base, instance, bytes, cur) {
-                        Ok((cmd, cons)) => return Ok((cmd, 1 + cons)),
-                        Err(ParseError::Other(_)) => continue,
-                        Err(e) => return Err(e),
-                    }
-                }
-
-                Err(ParseError::Other(format!("unknown opcode {:#X}", other)))
-            }
-        }
     }
 }

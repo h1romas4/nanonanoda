@@ -1,4 +1,4 @@
-use soundlog::{Gd3, VgmDocument, VgmHeader};
+use soundlog::{VgmDocument, VgmHeader, meta::Gd3};
 
 #[test]
 fn test_gd3_to_bytes_fields() {
@@ -54,11 +54,11 @@ fn test_vgmdocument_includes_gd3_and_header_offset() {
 
     let doc = VgmDocument {
         header: VgmHeader::default(),
-        commands: Vec::new(),
         gd3: Some(gd3),
+        ..Default::default()
     };
 
-    let bytes = doc.to_bytes();
+    let bytes: Vec<u8> = doc.into();
 
     let pos = bytes
         .windows(4)
