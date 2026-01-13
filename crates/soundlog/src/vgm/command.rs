@@ -87,13 +87,8 @@ pub enum VgmCommand {
     VsuWrite(ChipId, chip::VsuSpec),
     Saa1099Write(ChipId, chip::Saa1099Spec),
     Es5503Write(ChipId, chip::Es5503Spec),
-<<<<<<< HEAD
-    Es5506v8Write(ChipId, chip::Es5506v8Spec),
-    Es5506v16Write(ChipId, chip::Es5506v16Spec),
-=======
     Es5506BEWrite(ChipId, chip::Es5506U8Spec),
     Es5506D6Write(ChipId, chip::Es5506U16Spec),
->>>>>>> feature-refvgm
     X1010Write(ChipId, chip::X1010Spec),
     C352Write(ChipId, chip::C352Spec),
     Ga20Write(ChipId, chip::Ga20Spec),
@@ -138,6 +133,7 @@ pub struct DataBlock {
     pub data: Vec<u8>,
 }
 
+/// VGM command 0x68 specifies a PCM RAM write.
 #[derive(Debug, Clone, PartialEq)]
 pub struct PcmRamWrite {
     pub chip_type: u8,
@@ -906,17 +902,6 @@ impl From<(ChipId, chip::Es5503Spec)> for VgmCommand {
     }
 }
 
-<<<<<<< HEAD
-impl From<(ChipId, chip::Es5506v8Spec)> for VgmCommand {
-    fn from(v: (ChipId, chip::Es5506v8Spec)) -> Self {
-        VgmCommand::Es5506v8Write(v.0, v.1)
-    }
-}
-
-impl From<(ChipId, chip::Es5506v16Spec)> for VgmCommand {
-    fn from(v: (ChipId, chip::Es5506v16Spec)) -> Self {
-        VgmCommand::Es5506v16Write(v.0, v.1)
-=======
 impl From<(ChipId, chip::Es5506U8Spec)> for VgmCommand {
     fn from(v: (ChipId, chip::Es5506U8Spec)) -> Self {
         VgmCommand::Es5506BEWrite(v.0, v.1)
@@ -926,7 +911,6 @@ impl From<(ChipId, chip::Es5506U8Spec)> for VgmCommand {
 impl From<(ChipId, chip::Es5506U16Spec)> for VgmCommand {
     fn from(v: (ChipId, chip::Es5506U16Spec)) -> Self {
         VgmCommand::Es5506D6Write(v.0, v.1)
->>>>>>> feature-refvgm
     }
 }
 

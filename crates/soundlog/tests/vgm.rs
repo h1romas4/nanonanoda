@@ -538,8 +538,6 @@ fn test_create_and_parse_vgm_document() {
         println!("{:?}", cmd);
     });
 }
-<<<<<<< HEAD
-=======
 
 #[test]
 fn test_loop_offset_serialized_matches_header() {
@@ -587,4 +585,3 @@ fn test_iter_with_offsets() {
     // No more commands
     assert!(it.next().is_none());
 }
->>>>>>> feature-refvgm

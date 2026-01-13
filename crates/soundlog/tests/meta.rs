@@ -1,9 +1,5 @@
-<<<<<<< HEAD
-use soundlog::{VgmDocument, VgmHeader, meta::Gd3};
-=======
 use soundlog::meta::Gd3;
 use soundlog::{VgmDocument, VgmHeader};
->>>>>>> feature-refvgm
 
 #[test]
 fn test_gd3_to_bytes_fields() {

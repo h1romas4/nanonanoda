@@ -1,9 +1,6 @@
 use crate::binutil::{write_slice, write_u8, write_u16, write_u32};
-<<<<<<< HEAD
-=======
 use crate::chip;
 use crate::vgm::command::ChipId;
->>>>>>> feature-refvgm
 use crate::vgm::parser;
 use std::convert::TryFrom;
 
@@ -280,15 +277,6 @@ impl VgmHeader {
         }
         buf
     }
-<<<<<<< HEAD
-}
-
-/// Attempt to convert a raw VGM byte slice into a `VgmHeader`.
-///
-/// This is a fallible conversion that delegates to
-/// `crate::vgm::parser::parse_vgm_header` and returns a
-/// `crate::binutil::ParseError` on failure.
-=======
 
     /// Set the stored clock field for a chip `ch` at the given `instance`.
     /// For secondary instances the high bit is set on the stored value
@@ -349,15 +337,10 @@ impl VgmHeader {
 }
 
 /// Attempt to convert a raw VGM byte slice into a `VgmHeader`.
->>>>>>> feature-refvgm
 impl TryFrom<&[u8]> for VgmHeader {
     type Error = crate::binutil::ParseError;
 
     fn try_from(bytes: &[u8]) -> Result<Self, Self::Error> {
-<<<<<<< HEAD
-        // Delegate to the parser and return its error instead of panicking.
-=======
->>>>>>> feature-refvgm
         parser::parse_vgm_header(bytes).map(|(h, _)| h)
     }
 }
