@@ -538,3 +538,53 @@ fn test_create_and_parse_vgm_document() {
         println!("{:?}", cmd);
     });
 }
+<<<<<<< HEAD
+=======
+
+#[test]
+fn test_loop_offset_serialized_matches_header() {
+    let mut b = VgmBuilder::new();
+    // two commands, set loop to the second one (index 1)
+    b.add_vgm_command(WaitSamples(1));
+    b.add_vgm_command(WaitSamples(2));
+    b.set_loop_offset(1usize);
+    let doc = b.finalize();
+
+    // header field computed by finalize
+    let header_loop = doc.header.loop_offset;
+
+    // serialized bytes should contain the same little-endian u32 at 0x1C
+    let bytes: Vec<u8> = (&doc).into();
+    assert!(bytes.len() >= 0x20);
+    let ser_loop = u32::from_le_bytes([bytes[0x1C], bytes[0x1D], bytes[0x1E], bytes[0x1F]]);
+
+    assert_eq!(header_loop, ser_loop);
+}
+
+#[test]
+fn test_iter_with_offsets() {
+    let mut b = VgmBuilder::new();
+    // Add a WaitSamples (opcode + 2 bytes => 3 bytes) and a SeekOffset (opcode + 4 bytes => 5 bytes)
+    b.add_vgm_command(WaitSamples(1));
+    b.add_vgm_command(SeekOffset(0x1234));
+    let doc = b.finalize();
+
+    // Collect offsets/lengths via the borrow-iterator
+    let mut it = doc.iter_with_offsets();
+
+    let first = it.next().expect("first command present");
+    // first command should begin at offset 0 and have length 3
+    assert_eq!(first.0, 0usize);
+    assert_eq!(first.1, 3usize);
+    assert_eq!(first.2.clone(), VgmCommand::WaitSamples(WaitSamples(1)));
+
+    let second = it.next().expect("second command present");
+    // second command should begin immediately after the first (offset 3) and have length 5
+    assert_eq!(second.0, 3usize);
+    assert_eq!(second.1, 5usize);
+    assert_eq!(second.2.clone(), VgmCommand::SeekOffset(SeekOffset(0x1234)));
+
+    // No more commands
+    assert!(it.next().is_none());
+}
+>>>>>>> feature-refvgm

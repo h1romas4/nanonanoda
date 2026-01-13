@@ -7,8 +7,13 @@ use crate::vgm::command::{
     StopStream, VgmCommand, Wait735Samples, Wait882Samples, WaitNSample, WaitSamples,
     Ym2612Port0Address2AWriteAndWaitN,
 };
+<<<<<<< HEAD
 use crate::vgm::header::{VGM_V171_HEADER_SIZE, VgmHeader};
 use crate::vgm::model::VgmDocument;
+=======
+use crate::vgm::document::VgmDocument;
+use crate::vgm::header::{VGM_V171_HEADER_SIZE, VgmHeader};
+>>>>>>> feature-refvgm
 
 /// Parse a complete VGM file from a byte slice into a `VgmDocument`.
 ///
@@ -432,12 +437,21 @@ pub(crate) fn parse_chip_write(
             Ok((VgmCommand::Es5503Write(instance, spec), n))
         }
         0xBE => {
+<<<<<<< HEAD
             let (spec, n) = <chip::Es5506v8Spec as CommandSpec>::parse(bytes, offset, opcode)?;
             Ok((VgmCommand::Es5506v8Write(instance, spec), n))
         }
         0xD6 => {
             let (spec, n) = <chip::Es5506v16Spec as CommandSpec>::parse(bytes, offset, opcode)?;
             Ok((VgmCommand::Es5506v16Write(instance, spec), n))
+=======
+            let (spec, n) = <chip::Es5506U8Spec as CommandSpec>::parse(bytes, offset, opcode)?;
+            Ok((VgmCommand::Es5506BEWrite(instance, spec), n))
+        }
+        0xD6 => {
+            let (spec, n) = <chip::Es5506U16Spec as CommandSpec>::parse(bytes, offset, opcode)?;
+            Ok((VgmCommand::Es5506D6Write(instance, spec), n))
+>>>>>>> feature-refvgm
         }
         0xC4 => {
             let (spec, n) = <chip::QsoundSpec as CommandSpec>::parse(bytes, offset, opcode)?;

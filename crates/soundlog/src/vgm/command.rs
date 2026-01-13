@@ -2,8 +2,13 @@ use crate::binutil::{
     ParseError, read_i32_le_at, read_slice, read_u8_at, read_u24_be_at, read_u32_le_at,
 };
 use crate::chip;
+<<<<<<< HEAD
 use crate::vgm::header::VGM_V171_HEADER_SIZE;
 use crate::vgm::model::VgmDocument;
+=======
+use crate::vgm::document::VgmDocument;
+use crate::vgm::header::VGM_V171_HEADER_SIZE;
+>>>>>>> feature-refvgm
 
 /// Chip instance identifier for VGM commands.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -87,8 +92,13 @@ pub enum VgmCommand {
     VsuWrite(ChipId, chip::VsuSpec),
     Saa1099Write(ChipId, chip::Saa1099Spec),
     Es5503Write(ChipId, chip::Es5503Spec),
+<<<<<<< HEAD
     Es5506v8Write(ChipId, chip::Es5506v8Spec),
     Es5506v16Write(ChipId, chip::Es5506v16Spec),
+=======
+    Es5506BEWrite(ChipId, chip::Es5506U8Spec),
+    Es5506D6Write(ChipId, chip::Es5506U16Spec),
+>>>>>>> feature-refvgm
     X1010Write(ChipId, chip::X1010Spec),
     C352Write(ChipId, chip::C352Spec),
     Ga20Write(ChipId, chip::Ga20Spec),
@@ -105,6 +115,7 @@ pub(crate) trait CommandSpec {
         Self: Sized;
 }
 
+<<<<<<< HEAD
 #[derive(Debug, Clone, PartialEq)]
 pub struct Ay8910StereoMask(pub u8);
 
@@ -120,6 +131,29 @@ pub struct Wait882Samples;
 #[derive(Debug, Clone, PartialEq)]
 pub struct EndOfData;
 
+=======
+/// AY8910 stereo mask
+#[derive(Debug, Clone, PartialEq)]
+pub struct Ay8910StereoMask(pub u8);
+
+/// Wait n samples, n can range from 0 to 65535 (approx 1.49 seconds).
+#[derive(Debug, Clone, PartialEq)]
+pub struct WaitSamples(pub u16);
+
+/// wait 735 samples (60th of a second), a shortcut for 0x61 0xdf 0x02
+#[derive(Debug, Clone, PartialEq)]
+pub struct Wait735Samples;
+
+/// wait 882 samples (50th of a second), a shortcut for 0x61 0x72 0x03
+#[derive(Debug, Clone, PartialEq)]
+pub struct Wait882Samples;
+
+/// end of sound data
+#[derive(Debug, Clone, PartialEq)]
+pub struct EndOfData;
+
+/// VGM command 0x67 specifies a data block.
+>>>>>>> feature-refvgm
 #[derive(Debug, Clone, PartialEq)]
 pub struct DataBlock {
     pub data_type: u8,
@@ -127,6 +161,10 @@ pub struct DataBlock {
     pub data: Vec<u8>,
 }
 
+<<<<<<< HEAD
+=======
+/// VGM command 0x68 specifies a PCM RAM write.
+>>>>>>> feature-refvgm
 #[derive(Debug, Clone, PartialEq)]
 pub struct PcmRamWrite {
     pub chip_type: u8,
@@ -136,12 +174,26 @@ pub struct PcmRamWrite {
     pub data: Vec<u8>,
 }
 
+<<<<<<< HEAD
 #[derive(Debug, Clone, PartialEq)]
 pub struct WaitNSample(pub u8);
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Ym2612Port0Address2AWriteAndWaitN(pub u8);
 
+=======
+/// wait n+1 samples, n can range from 0 to 15.
+#[derive(Debug, Clone, PartialEq)]
+pub struct WaitNSample(pub u8);
+
+/// YM2612 port 0 address 2A write from the data bank,
+/// then wait n samples; n can range from 0 to 15.
+/// Note that the wait is n, NOT n+1.
+#[derive(Debug, Clone, PartialEq)]
+pub struct Ym2612Port0Address2AWriteAndWaitN(pub u8);
+
+/// DAC Stream Control Write: Setup Stream Control
+>>>>>>> feature-refvgm
 #[derive(Debug, Clone, PartialEq)]
 pub struct SetupStreamControl {
     pub stream_id: u8,
@@ -150,6 +202,10 @@ pub struct SetupStreamControl {
     pub write_command: u8,
 }
 
+<<<<<<< HEAD
+=======
+/// DAC Stream Control Write: Set Stream Data
+>>>>>>> feature-refvgm
 #[derive(Debug, Clone, PartialEq)]
 pub struct SetStreamData {
     pub stream_id: u8,
@@ -158,12 +214,20 @@ pub struct SetStreamData {
     pub step_base: u8,
 }
 
+<<<<<<< HEAD
+=======
+/// DAC Stream Control Write: Set Stream Frequency
+>>>>>>> feature-refvgm
 #[derive(Debug, Clone, PartialEq)]
 pub struct SetStreamFrequency {
     pub stream_id: u8,
     pub frequency: u32,
 }
 
+<<<<<<< HEAD
+=======
+/// DAC Stream Control Write: Start Stream
+>>>>>>> feature-refvgm
 #[derive(Debug, Clone, PartialEq)]
 pub struct StartStream {
     pub stream_id: u8,
@@ -172,11 +236,19 @@ pub struct StartStream {
     pub data_length: u32,
 }
 
+<<<<<<< HEAD
+=======
+/// DAC Stream Control Write: Stop Stream
+>>>>>>> feature-refvgm
 #[derive(Debug, Clone, PartialEq)]
 pub struct StopStream {
     pub stream_id: u8,
 }
 
+<<<<<<< HEAD
+=======
+/// DAC Stream Control Write: Start Stream (fast call)
+>>>>>>> feature-refvgm
 #[derive(Debug, Clone, PartialEq)]
 pub struct StartStreamFastCall {
     pub stream_id: u8,
@@ -184,6 +256,11 @@ pub struct StartStreamFastCall {
     pub flags: u8,
 }
 
+<<<<<<< HEAD
+=======
+/// Seek to offset dddddddd (Intel byte order)
+/// in PCM data bank of data block type 0 (YM2612).
+>>>>>>> feature-refvgm
 #[derive(Debug, Clone, PartialEq)]
 pub struct SeekOffset(pub u32);
 
@@ -883,6 +960,7 @@ impl From<(ChipId, chip::Es5503Spec)> for VgmCommand {
     }
 }
 
+<<<<<<< HEAD
 impl From<(ChipId, chip::Es5506v8Spec)> for VgmCommand {
     fn from(v: (ChipId, chip::Es5506v8Spec)) -> Self {
         VgmCommand::Es5506v8Write(v.0, v.1)
@@ -892,6 +970,17 @@ impl From<(ChipId, chip::Es5506v8Spec)> for VgmCommand {
 impl From<(ChipId, chip::Es5506v16Spec)> for VgmCommand {
     fn from(v: (ChipId, chip::Es5506v16Spec)) -> Self {
         VgmCommand::Es5506v16Write(v.0, v.1)
+=======
+impl From<(ChipId, chip::Es5506U8Spec)> for VgmCommand {
+    fn from(v: (ChipId, chip::Es5506U8Spec)) -> Self {
+        VgmCommand::Es5506BEWrite(v.0, v.1)
+    }
+}
+
+impl From<(ChipId, chip::Es5506U16Spec)> for VgmCommand {
+    fn from(v: (ChipId, chip::Es5506U16Spec)) -> Self {
+        VgmCommand::Es5506D6Write(v.0, v.1)
+>>>>>>> feature-refvgm
     }
 }
 
@@ -1872,7 +1961,11 @@ impl CommandSpec for chip::Es5503Spec {
     }
 }
 
+<<<<<<< HEAD
 impl CommandSpec for chip::Es5506v8Spec {
+=======
+impl CommandSpec for chip::Es5506U8Spec {
+>>>>>>> feature-refvgm
     // ES5506, write value dd to register aa
     //  Note: This command writes 8-bit data.
     fn opcode(&self) -> u8 {
@@ -1890,7 +1983,11 @@ impl CommandSpec for chip::Es5506v8Spec {
         let reg = read_u8_at(bytes, off)?;
         let val = read_u8_at(bytes, off + 1)?;
         Ok((
+<<<<<<< HEAD
             chip::Es5506v8Spec {
+=======
+            chip::Es5506U8Spec {
+>>>>>>> feature-refvgm
                 register: reg,
                 value: val,
             },
@@ -1899,7 +1996,11 @@ impl CommandSpec for chip::Es5506v8Spec {
     }
 }
 
+<<<<<<< HEAD
 impl CommandSpec for chip::Es5506v16Spec {
+=======
+impl CommandSpec for chip::Es5506U16Spec {
+>>>>>>> feature-refvgm
     // ES5506, write value aadd to register pp
     //  Note: This command writes 16-bit data.
     fn opcode(&self) -> u8 {
@@ -1921,7 +2022,11 @@ impl CommandSpec for chip::Es5506v16Spec {
         let lo = read_u8_at(bytes, off + 2)?;
         let val = ((hi as u16) << 8) | (lo as u16);
         Ok((
+<<<<<<< HEAD
             chip::Es5506v16Spec {
+=======
+            chip::Es5506U16Spec {
+>>>>>>> feature-refvgm
                 register: reg,
                 value: val,
             },
@@ -2062,6 +2167,7 @@ impl CommandSpec for chip::GameGearPsgSpec {
 }
 
 impl VgmDocument {
+<<<<<<< HEAD
     pub(crate) fn to_bytes(&self) -> Vec<u8> {
         fn adjust_opcode_for_chip_id(instance_id: ChipId, opcode: u8) -> u8 {
             match instance_id {
@@ -2143,6 +2249,18 @@ impl VgmDocument {
                 VgmCommand::GameGearPsgWrite(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
             }
         }
+=======
+    /// Serialize the `VgmDocument` into a complete VGM file byte stream.
+    ///
+    /// This constructs the VGM header (including GD3 and data offsets),
+    /// serializes the document's command stream into VGM command bytes,
+    /// appends an End-of-Data opcode if one is not already present, and
+    /// appends optional GD3 metadata. Header fields that depend on the
+    /// serialized size (for example file size and GD3 offset) are updated
+    /// in-place before the final byte vector is returned.
+    pub(crate) fn to_bytes(&self) -> Vec<u8> {
+        let cmd_buf = self.commands_to_bytes_up_to(self.commands.len());
+>>>>>>> feature-refvgm
 
         let wrote_end_in_cmds = self
             .commands
@@ -2156,6 +2274,10 @@ impl VgmDocument {
                 .wrapping_sub(0x14),
             None => 0,
         };
+<<<<<<< HEAD
+=======
+
+>>>>>>> feature-refvgm
         // data offset (0x34)
         let data_offset: u32 = match self.header.data_offset {
             0 => VGM_V171_HEADER_SIZE.wrapping_sub(0x34),
@@ -2189,4 +2311,149 @@ impl VgmDocument {
 
         buf
     }
+<<<<<<< HEAD
+=======
+
+    /// `spec_to_vgm_bytes` is a module-visible associated helper used to
+    /// convert a chip-specific `CommandSpec` into bytes while adjusting the
+    /// opcode according to the chip instance (primary/secondary).
+    pub(crate) fn spec_to_vgm_bytes<C: crate::vgm::command::CommandSpec + ?Sized>(
+        chip_id: crate::vgm::command::ChipId,
+        spec: &C,
+        cmd_buf: &mut Vec<u8>,
+    ) {
+        let start = cmd_buf.len();
+        spec.to_vgm_bytes(cmd_buf);
+        cmd_buf[start] = match chip_id {
+            crate::vgm::command::ChipId::Primary => cmd_buf[start],
+            crate::vgm::command::ChipId::Secondary => cmd_buf[start].wrapping_add(0x50),
+        };
+    }
+
+    /// Serialize a single `VgmCommand` into its VGM byte representation.
+    ///
+    /// Returns a tuple `(Vec<u8>, usize)` where the first element is the
+    /// serialized bytes for the command and the second element is the length
+    /// (number of bytes) of that serialization.
+    ///
+    /// This helper covers both plain command specs (which implement
+    /// `CommandSpec::to_vgm_bytes`) and chip-specific specs that include a
+    /// `ChipId`. For chip-specific specs the opcode byte is adjusted for
+    /// secondary instances (the opcode is incremented by `0x50`) via
+    /// `spec_to_vgm_bytes`.
+    ///
+    /// The function is intended for internal use by other routines that need
+    /// per-command bytes or lengths (for example computing command offsets)
+    /// without serializing the entire document.
+    ///
+    /// # Returns
+    /// - `(bytes, len)` — `bytes` contains the VGM bytes for the command,
+    ///   `len` is equal to `bytes.len()`.
+    pub(crate) fn command_to_vgm_bytes(cmd: &crate::vgm::command::VgmCommand) -> (Vec<u8>, usize) {
+        let mut buf: Vec<u8> = Vec::new();
+        use crate::vgm::command::VgmCommand::*;
+        match cmd {
+            AY8910StereoMask(s) => s.to_vgm_bytes(&mut buf),
+            WaitSamples(s) => s.to_vgm_bytes(&mut buf),
+            Wait735Samples(s) => s.to_vgm_bytes(&mut buf),
+            Wait882Samples(s) => s.to_vgm_bytes(&mut buf),
+            EndOfData(s) => s.to_vgm_bytes(&mut buf),
+            DataBlock(s) => s.to_vgm_bytes(&mut buf),
+            PcmRamWrite(s) => s.to_vgm_bytes(&mut buf),
+            WaitNSample(s) => s.to_vgm_bytes(&mut buf),
+            YM2612Port0Address2AWriteAndWaitN(s) => s.to_vgm_bytes(&mut buf),
+            SetupStreamControl(s) => s.to_vgm_bytes(&mut buf),
+            SetStreamData(s) => s.to_vgm_bytes(&mut buf),
+            SetStreamFrequency(s) => s.to_vgm_bytes(&mut buf),
+            StartStream(s) => s.to_vgm_bytes(&mut buf),
+            StopStream(s) => s.to_vgm_bytes(&mut buf),
+            StartStreamFastCall(s) => s.to_vgm_bytes(&mut buf),
+            SeekOffset(s) => s.to_vgm_bytes(&mut buf),
+            Sn76489Write(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            Ym2413Write(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            Ym2612Write(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            Ym2151Write(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            SegaPcmWrite(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            Rf5c68Write(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            Ym2203Write(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            Ym2608Write(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            Ym2610bWrite(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            Ym3812Write(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            Ym3526Write(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            Y8950Write(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            Ymf262Write(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            Ymf278bWrite(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            Ymf271Write(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            Scc1Write(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            Ymz280bWrite(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            Rf5c164Write(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            PwmWrite(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            Ay8910Write(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            GbDmgWrite(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            NesApuWrite(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            MultiPcmWrite(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            Upd7759Write(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            Okim6258Write(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            Okim6295Write(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            K051649Write(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            K054539Write(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            Huc6280Write(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            C140Write(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            K053260Write(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            PokeyWrite(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            QsoundWrite(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            ScspWrite(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            WonderSwanWrite(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            VsuWrite(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            Saa1099Write(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            Es5503Write(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            Es5506BEWrite(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            Es5506D6Write(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            X1010Write(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            C352Write(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            Ga20Write(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            MikeyWrite(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            GameGearPsgWrite(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+        }
+        let len = buf.len();
+
+        (buf, len)
+    }
+
+    /// Convert commands up to `end` (exclusive) into VGM command bytes.
+    /// This mirrors the logic used by `VgmDocument::to_bytes()` so callers
+    /// (e.g. `finalize`) can compute lengths/offsets without duplicating code.
+    pub(crate) fn commands_to_bytes_up_to(&self, end: usize) -> Vec<u8> {
+        let mut cmd_buf: Vec<u8> = Vec::new();
+        let upto = std::cmp::min(end, self.commands.len());
+        for cmd in &self.commands[..upto] {
+            let (b, _len) = Self::command_to_vgm_bytes(cmd);
+            cmd_buf.extend_from_slice(&b);
+        }
+
+        cmd_buf
+    }
+
+    /// Compute per-command (offset, length) tuples for the document's command
+    /// stream.
+    ///
+    /// Returns a `Vec<(usize, usize)>` where each tuple represents the byte
+    /// offset (relative to the start of the command stream) and the serialized
+    /// length of the corresponding command in `self.commands`. This uses the
+    /// crate-local `command_to_vgm_bytes` helper to determine each command's
+    /// serialized length without serializing the entire document.
+    pub(crate) fn command_offsets_and_lengths(&self) -> Vec<(usize, usize)> {
+        let mut out: Vec<(usize, usize)> = Vec::with_capacity(self.commands.len());
+        let mut offset: usize = 0;
+
+        for cmd in &self.commands {
+            // `command_to_vgm_bytes` returns (bytes, len). We only need len here.
+            let (_bytes, len) = Self::command_to_vgm_bytes(cmd);
+            out.push((offset, len));
+            offset = offset.wrapping_add(len);
+        }
+
+        out
+    }
+>>>>>>> feature-refvgm
 }

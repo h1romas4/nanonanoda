@@ -1,4 +1,9 @@
 use crate::binutil::{write_slice, write_u8, write_u16, write_u32};
+<<<<<<< HEAD
+=======
+use crate::chip;
+use crate::vgm::command::ChipId;
+>>>>>>> feature-refvgm
 use crate::vgm::parser;
 use std::convert::TryFrom;
 
@@ -275,6 +280,7 @@ impl VgmHeader {
         }
         buf
     }
+<<<<<<< HEAD
 }
 
 /// Attempt to convert a raw VGM byte slice into a `VgmHeader`.
@@ -282,11 +288,76 @@ impl VgmHeader {
 /// This is a fallible conversion that delegates to
 /// `crate::vgm::parser::parse_vgm_header` and returns a
 /// `crate::binutil::ParseError` on failure.
+=======
+
+    /// Set the stored clock field for a chip `ch` at the given `instance`.
+    /// For secondary instances the high bit is set on the stored value
+    /// following VGM header convention.
+    pub fn set_chip_clock(&mut self, ch: chip::Chip, instance: ChipId, master_clock: u32) {
+        let clock = match instance {
+            ChipId::Primary => master_clock,
+            ChipId::Secondary => master_clock | 0x8000_0000u32,
+        };
+
+        match &ch {
+            chip::Chip::Sn76489 => self.sn76489_clock = clock,
+            chip::Chip::Ym2413 => self.ym2413_clock = clock,
+            chip::Chip::Ym2612 => self.ym2612_clock = clock,
+            chip::Chip::Ym2151 => self.ym2151_clock = clock,
+            chip::Chip::SegaPcm => self.sega_pcm_clock = clock,
+            chip::Chip::Rf5c68 => self.rf5c68_clock = clock,
+            chip::Chip::Ym2203 => self.ym2203_clock = clock,
+            chip::Chip::Ym2608 => self.ym2608_clock = clock,
+            chip::Chip::Ym2610b => self.ym2610b_clock = clock,
+            chip::Chip::Ym3812 => self.ym3812_clock = clock,
+            chip::Chip::Ym3526 => self.ym3526_clock = clock,
+            chip::Chip::Y8950 => self.y8950_clock = clock,
+            chip::Chip::Ymf262 => self.ymf262_clock = clock,
+            chip::Chip::Ymf278b => self.ymf278b_clock = clock,
+            chip::Chip::Ymf271 => self.ymf271_clock = clock,
+            chip::Chip::Ymz280b => self.ymz280b_clock = clock,
+            chip::Chip::Rf5c164 => self.rf5c164_clock = clock,
+            chip::Chip::Pwm => self.pwm_clock = clock,
+            chip::Chip::Ay8910 => self.ay8910_clock = clock,
+            chip::Chip::GbDmg => self.gb_dmg_clock = clock,
+            chip::Chip::NesApu => self.nes_apu_clock = clock,
+            chip::Chip::MultiPcm => self.multipcm_clock = clock,
+            chip::Chip::Upd7759 => self.upd7759_clock = clock,
+            chip::Chip::Okim6258 => self.okim6258_clock = clock,
+            chip::Chip::Okim6295 => self.okim6295_clock = clock,
+            chip::Chip::K051649 => self.k051649_clock = clock,
+            chip::Chip::K054539 => self.k054539_clock = clock,
+            chip::Chip::Huc6280 => self.huc6280_clock = clock,
+            chip::Chip::C140 => self.c140_clock = clock,
+            chip::Chip::K053260 => self.k053260_clock = clock,
+            chip::Chip::Pokey => self.pokey_clock = clock,
+            chip::Chip::Qsound => self.qsound_clock = clock,
+            chip::Chip::Scsp => self.scsp_clock = clock,
+            chip::Chip::WonderSwan => self.wonderswan_clock = clock,
+            chip::Chip::Vsu => self.vsu_clock = clock,
+            chip::Chip::Saa1099 => self.saa1099_clock = clock,
+            chip::Chip::Es5503 => self.es5503_clock = clock,
+            chip::Chip::Es5506U8 => self.es5506_clock = clock,
+            chip::Chip::Es5506U16 => self.es5506_clock = clock,
+            chip::Chip::X1010 => self.x1_010_clock = clock,
+            chip::Chip::C352 => self.c352_clock = clock,
+            chip::Chip::Ga20 => self.ga20_clock = clock,
+            chip::Chip::Mikey => self.mikey_clock = clock,
+            _ => {}
+        }
+    }
+}
+
+/// Attempt to convert a raw VGM byte slice into a `VgmHeader`.
+>>>>>>> feature-refvgm
 impl TryFrom<&[u8]> for VgmHeader {
     type Error = crate::binutil::ParseError;
 
     fn try_from(bytes: &[u8]) -> Result<Self, Self::Error> {
+<<<<<<< HEAD
         // Delegate to the parser and return its error instead of panicking.
+=======
+>>>>>>> feature-refvgm
         parser::parse_vgm_header(bytes).map(|(h, _)| h)
     }
 }

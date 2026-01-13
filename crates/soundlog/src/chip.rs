@@ -43,8 +43,8 @@ pub enum Chip {
     Vsu,
     Saa1099,
     Es5503,
-    Es5506v8,
-    Es5506v16,
+    Es5506U8,
+    Es5506U16,
     X1010,
     C352,
     Ga20,
@@ -80,14 +80,14 @@ pub struct Ym2151Spec {
     pub value: u8,
 }
 
-/// Sega PCM memory write specification (offset + value).
+/// Sega PCM memory write specification (16-bit offset).
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct SegaPcmSpec {
     pub offset: u16,
     pub value: u8,
 }
 
-/// RF5C68 memory write specification (offset + value).
+/// RF5C68 memory write specification (16-bit offset).
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Rf5c68Spec {
     pub offset: u16,
@@ -146,7 +146,7 @@ pub struct Ymf262Spec {
     pub value: u8,
 }
 
-/// YMF278B write specification (port, register, value).
+/// YMF278B write specification (includes port selection)..
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Ymf278bSpec {
     pub port: u8,
@@ -154,7 +154,7 @@ pub struct Ymf278bSpec {
     pub value: u8,
 }
 
-/// YMF271 write specification (port, register, value).
+/// YMF271 write specification (includes port selection)..
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Ymf271Spec {
     pub port: u8,
@@ -162,7 +162,7 @@ pub struct Ymf271Spec {
     pub value: u8,
 }
 
-/// SCC1 write specification (port, register, value).
+/// SCC1 write specification.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Scc1Spec {
     pub port: u8,
@@ -290,21 +290,21 @@ pub struct QsoundSpec {
     pub value: u16,
 }
 
-/// SCSP memory write specification (offset + value).
+/// SCSP memory write specification (16-bit offset).
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ScspSpec {
     pub offset: u16,
     pub value: u8,
 }
 
-/// WonderSwan memory write specification (offset + value).
+/// WonderSwan memory write specification (16-bit offset).
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct WonderSwanSpec {
     pub offset: u16,
     pub value: u8,
 }
 
-/// VSU memory write specification (offset + value).
+/// VSU memory write specification (16-bit offset).
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct VsuSpec {
     pub offset: u16,
@@ -327,19 +327,23 @@ pub struct Es5503Spec {
 
 /// ES5506 (8-bit variant) register write specification.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Es5506v8Spec {
+pub struct Es5506U8Spec {
     pub register: u8,
     pub value: u8,
 }
 
 /// ES5506 (16-bit variant) register write specification.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Es5506v16Spec {
+pub struct Es5506U16Spec {
     pub register: u8,
     pub value: u16,
 }
 
+<<<<<<< HEAD
 /// X1-010 memory write specification (offset + value).
+=======
+/// X1-010 memory write specification (16-bit offset).
+>>>>>>> feature-refvgm
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct X1010Spec {
     pub offset: u16,
@@ -367,7 +371,7 @@ pub struct MikeySpec {
     pub value: u8,
 }
 
-/// Game Gear PSG write specification (single data byte).
+/// Game Gear PSG write specification.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct GameGearPsgSpec {
     pub value: u8,
