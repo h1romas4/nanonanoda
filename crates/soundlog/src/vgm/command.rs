@@ -2,13 +2,8 @@ use crate::binutil::{
     ParseError, read_i32_le_at, read_slice, read_u8_at, read_u24_be_at, read_u32_le_at,
 };
 use crate::chip;
-<<<<<<< HEAD
-use crate::vgm::header::VGM_V171_HEADER_SIZE;
-use crate::vgm::model::VgmDocument;
-=======
 use crate::vgm::document::VgmDocument;
 use crate::vgm::header::VGM_V171_HEADER_SIZE;
->>>>>>> feature-refvgm
 
 /// Chip instance identifier for VGM commands.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -115,23 +110,6 @@ pub(crate) trait CommandSpec {
         Self: Sized;
 }
 
-<<<<<<< HEAD
-#[derive(Debug, Clone, PartialEq)]
-pub struct Ay8910StereoMask(pub u8);
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct WaitSamples(pub u16);
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct Wait735Samples;
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct Wait882Samples;
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct EndOfData;
-
-=======
 /// AY8910 stereo mask
 #[derive(Debug, Clone, PartialEq)]
 pub struct Ay8910StereoMask(pub u8);
@@ -153,7 +131,6 @@ pub struct Wait882Samples;
 pub struct EndOfData;
 
 /// VGM command 0x67 specifies a data block.
->>>>>>> feature-refvgm
 #[derive(Debug, Clone, PartialEq)]
 pub struct DataBlock {
     pub data_type: u8,
@@ -161,10 +138,6 @@ pub struct DataBlock {
     pub data: Vec<u8>,
 }
 
-<<<<<<< HEAD
-=======
-/// VGM command 0x68 specifies a PCM RAM write.
->>>>>>> feature-refvgm
 #[derive(Debug, Clone, PartialEq)]
 pub struct PcmRamWrite {
     pub chip_type: u8,
@@ -174,14 +147,6 @@ pub struct PcmRamWrite {
     pub data: Vec<u8>,
 }
 
-<<<<<<< HEAD
-#[derive(Debug, Clone, PartialEq)]
-pub struct WaitNSample(pub u8);
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct Ym2612Port0Address2AWriteAndWaitN(pub u8);
-
-=======
 /// wait n+1 samples, n can range from 0 to 15.
 #[derive(Debug, Clone, PartialEq)]
 pub struct WaitNSample(pub u8);
@@ -193,7 +158,6 @@ pub struct WaitNSample(pub u8);
 pub struct Ym2612Port0Address2AWriteAndWaitN(pub u8);
 
 /// DAC Stream Control Write: Setup Stream Control
->>>>>>> feature-refvgm
 #[derive(Debug, Clone, PartialEq)]
 pub struct SetupStreamControl {
     pub stream_id: u8,
@@ -202,10 +166,7 @@ pub struct SetupStreamControl {
     pub write_command: u8,
 }
 
-<<<<<<< HEAD
-=======
 /// DAC Stream Control Write: Set Stream Data
->>>>>>> feature-refvgm
 #[derive(Debug, Clone, PartialEq)]
 pub struct SetStreamData {
     pub stream_id: u8,
@@ -214,20 +175,14 @@ pub struct SetStreamData {
     pub step_base: u8,
 }
 
-<<<<<<< HEAD
-=======
 /// DAC Stream Control Write: Set Stream Frequency
->>>>>>> feature-refvgm
 #[derive(Debug, Clone, PartialEq)]
 pub struct SetStreamFrequency {
     pub stream_id: u8,
     pub frequency: u32,
 }
 
-<<<<<<< HEAD
-=======
 /// DAC Stream Control Write: Start Stream
->>>>>>> feature-refvgm
 #[derive(Debug, Clone, PartialEq)]
 pub struct StartStream {
     pub stream_id: u8,
@@ -236,19 +191,13 @@ pub struct StartStream {
     pub data_length: u32,
 }
 
-<<<<<<< HEAD
-=======
 /// DAC Stream Control Write: Stop Stream
->>>>>>> feature-refvgm
 #[derive(Debug, Clone, PartialEq)]
 pub struct StopStream {
     pub stream_id: u8,
 }
 
-<<<<<<< HEAD
-=======
 /// DAC Stream Control Write: Start Stream (fast call)
->>>>>>> feature-refvgm
 #[derive(Debug, Clone, PartialEq)]
 pub struct StartStreamFastCall {
     pub stream_id: u8,
@@ -256,11 +205,8 @@ pub struct StartStreamFastCall {
     pub flags: u8,
 }
 
-<<<<<<< HEAD
-=======
 /// Seek to offset dddddddd (Intel byte order)
 /// in PCM data bank of data block type 0 (YM2612).
->>>>>>> feature-refvgm
 #[derive(Debug, Clone, PartialEq)]
 pub struct SeekOffset(pub u32);
 
@@ -1961,11 +1907,7 @@ impl CommandSpec for chip::Es5503Spec {
     }
 }
 
-<<<<<<< HEAD
-impl CommandSpec for chip::Es5506v8Spec {
-=======
 impl CommandSpec for chip::Es5506U8Spec {
->>>>>>> feature-refvgm
     // ES5506, write value dd to register aa
     //  Note: This command writes 8-bit data.
     fn opcode(&self) -> u8 {
@@ -1983,11 +1925,7 @@ impl CommandSpec for chip::Es5506U8Spec {
         let reg = read_u8_at(bytes, off)?;
         let val = read_u8_at(bytes, off + 1)?;
         Ok((
-<<<<<<< HEAD
-            chip::Es5506v8Spec {
-=======
             chip::Es5506U8Spec {
->>>>>>> feature-refvgm
                 register: reg,
                 value: val,
             },
@@ -1996,11 +1934,7 @@ impl CommandSpec for chip::Es5506U8Spec {
     }
 }
 
-<<<<<<< HEAD
-impl CommandSpec for chip::Es5506v16Spec {
-=======
 impl CommandSpec for chip::Es5506U16Spec {
->>>>>>> feature-refvgm
     // ES5506, write value aadd to register pp
     //  Note: This command writes 16-bit data.
     fn opcode(&self) -> u8 {
@@ -2022,11 +1956,7 @@ impl CommandSpec for chip::Es5506U16Spec {
         let lo = read_u8_at(bytes, off + 2)?;
         let val = ((hi as u16) << 8) | (lo as u16);
         Ok((
-<<<<<<< HEAD
-            chip::Es5506v16Spec {
-=======
             chip::Es5506U16Spec {
->>>>>>> feature-refvgm
                 register: reg,
                 value: val,
             },
@@ -2167,89 +2097,6 @@ impl CommandSpec for chip::GameGearPsgSpec {
 }
 
 impl VgmDocument {
-<<<<<<< HEAD
-    pub(crate) fn to_bytes(&self) -> Vec<u8> {
-        fn adjust_opcode_for_chip_id(instance_id: ChipId, opcode: u8) -> u8 {
-            match instance_id {
-                ChipId::Primary => opcode,
-                ChipId::Secondary => opcode.wrapping_add(0x50),
-            }
-        }
-
-        fn to_vgm_bytes<C: CommandSpec + ?Sized>(id: ChipId, spec: &C, cmd_buf: &mut Vec<u8>) {
-            let start = cmd_buf.len();
-            spec.to_vgm_bytes(cmd_buf);
-            cmd_buf[start] = adjust_opcode_for_chip_id(id, cmd_buf[start]);
-        }
-
-        let mut cmd_buf: Vec<u8> = Vec::new();
-
-        for cmd in &self.commands {
-            match cmd {
-                VgmCommand::AY8910StereoMask(s) => s.to_vgm_bytes(&mut cmd_buf),
-                VgmCommand::WaitSamples(s) => s.to_vgm_bytes(&mut cmd_buf),
-                VgmCommand::Wait735Samples(s) => s.to_vgm_bytes(&mut cmd_buf),
-                VgmCommand::Wait882Samples(s) => s.to_vgm_bytes(&mut cmd_buf),
-                VgmCommand::EndOfData(s) => s.to_vgm_bytes(&mut cmd_buf),
-                VgmCommand::DataBlock(s) => s.to_vgm_bytes(&mut cmd_buf),
-                VgmCommand::PcmRamWrite(s) => s.to_vgm_bytes(&mut cmd_buf),
-                VgmCommand::WaitNSample(s) => s.to_vgm_bytes(&mut cmd_buf),
-                VgmCommand::YM2612Port0Address2AWriteAndWaitN(s) => s.to_vgm_bytes(&mut cmd_buf),
-                VgmCommand::SetupStreamControl(s) => s.to_vgm_bytes(&mut cmd_buf),
-                VgmCommand::SetStreamData(s) => s.to_vgm_bytes(&mut cmd_buf),
-                VgmCommand::SetStreamFrequency(s) => s.to_vgm_bytes(&mut cmd_buf),
-                VgmCommand::StartStream(s) => s.to_vgm_bytes(&mut cmd_buf),
-                VgmCommand::StopStream(s) => s.to_vgm_bytes(&mut cmd_buf),
-                VgmCommand::StartStreamFastCall(s) => s.to_vgm_bytes(&mut cmd_buf),
-                VgmCommand::SeekOffset(s) => s.to_vgm_bytes(&mut cmd_buf),
-                VgmCommand::Sn76489Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-                VgmCommand::Ym2413Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-                VgmCommand::Ym2612Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-                VgmCommand::Ym2151Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-                VgmCommand::SegaPcmWrite(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-                VgmCommand::Rf5c68Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-                VgmCommand::Ym2203Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-                VgmCommand::Ym2608Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-                VgmCommand::Ym2610bWrite(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-                VgmCommand::Ym3812Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-                VgmCommand::Ym3526Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-                VgmCommand::Y8950Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-                VgmCommand::Ymf262Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-                VgmCommand::Ymf278bWrite(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-                VgmCommand::Ymf271Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-                VgmCommand::Scc1Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-                VgmCommand::Ymz280bWrite(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-                VgmCommand::Rf5c164Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-                VgmCommand::PwmWrite(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-                VgmCommand::Ay8910Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-                VgmCommand::GbDmgWrite(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-                VgmCommand::NesApuWrite(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-                VgmCommand::MultiPcmWrite(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-                VgmCommand::Upd7759Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-                VgmCommand::Okim6258Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-                VgmCommand::Okim6295Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-                VgmCommand::K051649Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-                VgmCommand::K054539Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-                VgmCommand::Huc6280Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-                VgmCommand::C140Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-                VgmCommand::K053260Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-                VgmCommand::PokeyWrite(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-                VgmCommand::QsoundWrite(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-                VgmCommand::ScspWrite(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-                VgmCommand::WonderSwanWrite(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-                VgmCommand::VsuWrite(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-                VgmCommand::Saa1099Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-                VgmCommand::Es5503Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-                VgmCommand::Es5506v8Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-                VgmCommand::Es5506v16Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-                VgmCommand::X1010Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-                VgmCommand::C352Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-                VgmCommand::Ga20Write(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-                VgmCommand::MikeyWrite(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-                VgmCommand::GameGearPsgWrite(id, s) => to_vgm_bytes(*id, s, &mut cmd_buf),
-            }
-        }
-=======
     /// Serialize the `VgmDocument` into a complete VGM file byte stream.
     ///
     /// This constructs the VGM header (including GD3 and data offsets),
@@ -2260,7 +2107,6 @@ impl VgmDocument {
     /// in-place before the final byte vector is returned.
     pub(crate) fn to_bytes(&self) -> Vec<u8> {
         let cmd_buf = self.commands_to_bytes_up_to(self.commands.len());
->>>>>>> feature-refvgm
 
         let wrote_end_in_cmds = self
             .commands
@@ -2274,10 +2120,7 @@ impl VgmDocument {
                 .wrapping_sub(0x14),
             None => 0,
         };
-<<<<<<< HEAD
-=======
 
->>>>>>> feature-refvgm
         // data offset (0x34)
         let data_offset: u32 = match self.header.data_offset {
             0 => VGM_V171_HEADER_SIZE.wrapping_sub(0x34),
@@ -2311,8 +2154,6 @@ impl VgmDocument {
 
         buf
     }
-<<<<<<< HEAD
-=======
 
     /// `spec_to_vgm_bytes` is a module-visible associated helper used to
     /// convert a chip-specific `CommandSpec` into bytes while adjusting the
@@ -2455,5 +2296,4 @@ impl VgmDocument {
 
         out
     }
->>>>>>> feature-refvgm
 }

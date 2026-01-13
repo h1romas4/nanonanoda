@@ -376,11 +376,7 @@ fn spec_decode_vgm_bytes_all() {
         assert_eq!(buf, vec![0xD5, 0x88, 0x99, 0xAA]);
     }
     {
-<<<<<<< HEAD
-        let s = Es5506v16Spec {
-=======
         let s = Es5506U16Spec {
->>>>>>> feature-refvgm
             register: 0x1A,
             value: 0xBEEF,
         };

@@ -339,11 +339,7 @@ pub struct Es5506U16Spec {
     pub value: u16,
 }
 
-<<<<<<< HEAD
-/// X1-010 memory write specification (offset + value).
-=======
 /// X1-010 memory write specification (16-bit offset).
->>>>>>> feature-refvgm
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct X1010Spec {
     pub offset: u16,
