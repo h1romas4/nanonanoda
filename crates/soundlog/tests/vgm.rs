@@ -1,6 +1,6 @@
 use soundlog::chip::*;
 use soundlog::vgm::command::{
-    Ay8910StereoMask, ChipId, DataBlock, PcmRamWrite, SeekOffset, SetStreamFrequency,
+    Ay8910StereoMask, DataBlock, Instance, PcmRamWrite, SeekOffset, SetStreamFrequency,
     SetupStreamControl, StartStream, StartStreamFastCall, StopStream, VgmCommand, Wait735Samples,
     Wait882Samples, WaitNSample, WaitSamples, Ym2612Port0Address2AWriteAndWaitN,
 };
@@ -96,7 +96,7 @@ fn add_chip_write_ym2413() {
 fn add_chip_write_ym2612_ports() {
     let mut b = VgmBuilder::new();
     b.add_chip_write(
-        ChipId::Secondary,
+        Instance::Secondary,
         Ym2612Spec {
             port: 0,
             register: 0x2A,
@@ -104,7 +104,7 @@ fn add_chip_write_ym2612_ports() {
         },
     );
     b.add_chip_write(
-        ChipId::Secondary,
+        Instance::Secondary,
         Ym2612Spec {
             port: 1,
             register: 0x2A,
@@ -147,7 +147,7 @@ fn add_chip_write_ym2612_ports() {
 fn add_chip_write_pwm() {
     let mut b = VgmBuilder::new();
     b.add_chip_write(
-        ChipId::Secondary,
+        Instance::Secondary,
         PwmSpec {
             register: 0x01,
             value: 0x0000_FFEE,
@@ -174,7 +174,7 @@ fn add_chip_write_pwm() {
 fn add_chip_write_okim6295() {
     let mut b = VgmBuilder::new();
     b.add_chip_write(
-        ChipId::Secondary,
+        Instance::Secondary,
         Okim6295Spec {
             register: 0x0F,
             value: 0x10,
@@ -414,7 +414,7 @@ fn add_chip_write_uses_registered_instance() {
 fn add_chip_write_scc1() {
     let mut b = VgmBuilder::new();
     b.add_chip_write(
-        ChipId::Secondary,
+        Instance::Secondary,
         Scc1Spec {
             port: 0x05,
             register: 0x06,

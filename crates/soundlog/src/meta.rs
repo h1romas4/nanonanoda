@@ -77,7 +77,7 @@ pub(crate) fn parse_gd3(bytes: &[u8]) -> Result<Gd3, ParseError> {
 
     let data_off = 0x0Cusize;
     if bytes.len() < data_off + data_len {
-        return Err(ParseError::UnexpectedEof);
+        return Err(ParseError::OffsetOutOfRange(data_off));
     }
 
     let data = read_slice(bytes, data_off, data_len)?;
@@ -89,7 +89,7 @@ pub(crate) fn parse_gd3(bytes: &[u8]) -> Result<Gd3, ParseError> {
         let mut codes: Vec<u16> = Vec::new();
         loop {
             if i + 1 >= data.len() {
-                return Err(ParseError::UnexpectedEof);
+                return Err(ParseError::OffsetOutOfRange(i));
             }
             let code = read_u16_le_at(data, i)?;
             i += 2;

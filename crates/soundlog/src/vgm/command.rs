@@ -7,25 +7,25 @@ use crate::vgm::header::VGM_V171_HEADER_SIZE;
 
 /// Chip instance identifier for VGM commands.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum ChipId {
+pub enum Instance {
     Primary = 0x0,
     Secondary = 0x1,
 }
 
 /// Conversion between `usize` and `ChipId`.
-impl From<usize> for ChipId {
+impl From<usize> for Instance {
     fn from(v: usize) -> Self {
         match v {
-            0 => ChipId::Primary,
-            1 => ChipId::Secondary,
+            0 => Instance::Primary,
+            1 => Instance::Secondary,
             _ => panic!("Invalid ChipId from usize: {}", v),
         }
     }
 }
 
 /// Conversion between `ChipId` and `usize`.
-impl From<ChipId> for usize {
-    fn from(id: ChipId) -> Self {
+impl From<Instance> for usize {
+    fn from(id: Instance) -> Self {
         id as usize
     }
 }
@@ -49,51 +49,55 @@ pub enum VgmCommand {
     StopStream(StopStream),
     StartStreamFastCall(StartStreamFastCall),
     SeekOffset(SeekOffset),
-    Sn76489Write(ChipId, chip::PsgSpec),
-    Ym2413Write(ChipId, chip::Ym2413Spec),
-    Ym2612Write(ChipId, chip::Ym2612Spec),
-    Ym2151Write(ChipId, chip::Ym2151Spec),
-    SegaPcmWrite(ChipId, chip::SegaPcmSpec),
-    Rf5c68Write(ChipId, chip::Rf5c68Spec),
-    Ym2203Write(ChipId, chip::Ym2203Spec),
-    Ym2608Write(ChipId, chip::Ym2608Spec),
-    Ym2610bWrite(ChipId, chip::Ym2610Spec),
-    Ym3812Write(ChipId, chip::Ym3812Spec),
-    Ym3526Write(ChipId, chip::Ym3526Spec),
-    Y8950Write(ChipId, chip::Y8950Spec),
-    Ymf262Write(ChipId, chip::Ymf262Spec),
-    Ymf278bWrite(ChipId, chip::Ymf278bSpec),
-    Ymf271Write(ChipId, chip::Ymf271Spec),
-    Scc1Write(ChipId, chip::Scc1Spec),
-    Ymz280bWrite(ChipId, chip::Ymz280bSpec),
-    Rf5c164Write(ChipId, chip::Rf5c164Spec),
-    PwmWrite(ChipId, chip::PwmSpec),
-    Ay8910Write(ChipId, chip::Ay8910Spec),
-    GbDmgWrite(ChipId, chip::GbDmgSpec),
-    NesApuWrite(ChipId, chip::NesApuSpec),
-    MultiPcmWrite(ChipId, chip::MultiPcmSpec),
-    Upd7759Write(ChipId, chip::Upd7759Spec),
-    Okim6258Write(ChipId, chip::Okim6258Spec),
-    Okim6295Write(ChipId, chip::Okim6295Spec),
-    K051649Write(ChipId, chip::K051649Spec),
-    K054539Write(ChipId, chip::K054539Spec),
-    Huc6280Write(ChipId, chip::Huc6280Spec),
-    C140Write(ChipId, chip::C140Spec),
-    K053260Write(ChipId, chip::K053260Spec),
-    PokeyWrite(ChipId, chip::PokeySpec),
-    QsoundWrite(ChipId, chip::QsoundSpec),
-    ScspWrite(ChipId, chip::ScspSpec),
-    WonderSwanWrite(ChipId, chip::WonderSwanSpec),
-    VsuWrite(ChipId, chip::VsuSpec),
-    Saa1099Write(ChipId, chip::Saa1099Spec),
-    Es5503Write(ChipId, chip::Es5503Spec),
-    Es5506BEWrite(ChipId, chip::Es5506U8Spec),
-    Es5506D6Write(ChipId, chip::Es5506U16Spec),
-    X1010Write(ChipId, chip::X1010Spec),
-    C352Write(ChipId, chip::C352Spec),
-    Ga20Write(ChipId, chip::Ga20Spec),
-    MikeyWrite(ChipId, chip::MikeySpec),
-    GameGearPsgWrite(ChipId, chip::GameGearPsgSpec),
+    Sn76489Write(Instance, chip::PsgSpec),
+    Ym2413Write(Instance, chip::Ym2413Spec),
+    Ym2612Write(Instance, chip::Ym2612Spec),
+    Ym2151Write(Instance, chip::Ym2151Spec),
+    SegaPcmWrite(Instance, chip::SegaPcmSpec),
+    Rf5c68Write(Instance, chip::Rf5c68Spec),
+    Ym2203Write(Instance, chip::Ym2203Spec),
+    Ym2608Write(Instance, chip::Ym2608Spec),
+    Ym2610bWrite(Instance, chip::Ym2610Spec),
+    Ym3812Write(Instance, chip::Ym3812Spec),
+    Ym3526Write(Instance, chip::Ym3526Spec),
+    Y8950Write(Instance, chip::Y8950Spec),
+    Ymf262Write(Instance, chip::Ymf262Spec),
+    Ymf278bWrite(Instance, chip::Ymf278bSpec),
+    Ymf271Write(Instance, chip::Ymf271Spec),
+    Scc1Write(Instance, chip::Scc1Spec),
+    Ymz280bWrite(Instance, chip::Ymz280bSpec),
+    Rf5c164Write(Instance, chip::Rf5c164Spec),
+    PwmWrite(Instance, chip::PwmSpec),
+    Ay8910Write(Instance, chip::Ay8910Spec),
+    GbDmgWrite(Instance, chip::GbDmgSpec),
+    NesApuWrite(Instance, chip::NesApuSpec),
+    MultiPcmWrite(Instance, chip::MultiPcmSpec),
+    Upd7759Write(Instance, chip::Upd7759Spec),
+    Okim6258Write(Instance, chip::Okim6258Spec),
+    Okim6295Write(Instance, chip::Okim6295Spec),
+    K051649Write(Instance, chip::K051649Spec),
+    K054539Write(Instance, chip::K054539Spec),
+    Huc6280Write(Instance, chip::Huc6280Spec),
+    C140Write(Instance, chip::C140Spec),
+    K053260Write(Instance, chip::K053260Spec),
+    PokeyWrite(Instance, chip::PokeySpec),
+    QsoundWrite(Instance, chip::QsoundSpec),
+    ScspWrite(Instance, chip::ScspSpec),
+    WonderSwanWrite(Instance, chip::WonderSwanSpec),
+    VsuWrite(Instance, chip::VsuSpec),
+    Saa1099Write(Instance, chip::Saa1099Spec),
+    Es5503Write(Instance, chip::Es5503Spec),
+    Es5506BEWrite(Instance, chip::Es5506U8Spec),
+    Es5506D6Write(Instance, chip::Es5506U16Spec),
+    X1010Write(Instance, chip::X1010Spec),
+    C352Write(Instance, chip::C352Spec),
+    Ga20Write(Instance, chip::Ga20Spec),
+    MikeyWrite(Instance, chip::MikeySpec),
+    GameGearPsgWrite(Instance, chip::GameGearPsgSpec),
+    ReservedU8Write(ReservedU8),
+    ReservedU16Write(ReservedU16),
+    ReservedU24Write(ReservedU24),
+    ReservedU32Write(ReservedU32),
 }
 
 /// Trait for VGM command specifications.
@@ -199,6 +203,40 @@ pub struct StartStreamFastCall {
     pub stream_id: u8,
     pub block_id: u16,
     pub flags: u8,
+}
+
+/// one operand, reserved for future use
+#[derive(Debug, Clone, PartialEq)]
+pub struct ReservedU8 {
+    pub opcode: u8,
+    pub dd: u8,
+}
+
+/// two operands, reserved for future use (Note: was one operand only til v1.60)
+#[derive(Debug, Clone, PartialEq)]
+pub struct ReservedU16 {
+    pub opcode: u8,
+    pub dd1: u8,
+    pub dd2: u8,
+}
+
+/// three operands, reserved for future use
+#[derive(Debug, Clone, PartialEq)]
+pub struct ReservedU24 {
+    pub opcode: u8,
+    pub dd1: u8,
+    pub dd2: u8,
+    pub dd3: u8,
+}
+
+/// three operands, reserved for future use
+#[derive(Debug, Clone, PartialEq)]
+pub struct ReservedU32 {
+    pub opcode: u8,
+    pub dd1: u8,
+    pub dd2: u8,
+    pub dd3: u8,
+    pub dd4: u8,
 }
 
 /// Seek to offset dddddddd (Intel byte order)
@@ -364,7 +402,7 @@ impl CommandSpec for PcmRamWrite {
 
 impl CommandSpec for WaitNSample {
     fn opcode(&self) -> u8 {
-        0x70u8.wrapping_add(self.0.saturating_sub(1))
+        0x70_u8.wrapping_add(self.0.saturating_sub(1))
     }
     fn to_vgm_bytes(&self, dest: &mut Vec<u8>) {
         dest.push(self.opcode());
@@ -379,7 +417,7 @@ impl CommandSpec for WaitNSample {
 
 impl CommandSpec for Ym2612Port0Address2AWriteAndWaitN {
     fn opcode(&self) -> u8 {
-        0x80u8.wrapping_add(self.0)
+        0x80_u8.wrapping_add(self.0)
     }
     fn to_vgm_bytes(&self, dest: &mut Vec<u8>) {
         dest.push(self.opcode());
@@ -578,6 +616,107 @@ impl CommandSpec for SeekOffset {
     }
 }
 
+impl CommandSpec for ReservedU8 {
+    // base opcode for the ReservedU8 range (0x30..=0x3F)
+    fn opcode(&self) -> u8 {
+        self.opcode
+    }
+    fn to_vgm_bytes(&self, dest: &mut Vec<u8>) {
+        dest.push(self.opcode());
+        dest.push(self.dd);
+    }
+    fn parse(bytes: &[u8], offset: usize, opcode: u8) -> Result<(Self, usize), ParseError>
+    where
+        Self: Sized,
+    {
+        let dd = read_u8_at(bytes, offset)?;
+        Ok((ReservedU8 { opcode, dd }, 1))
+    }
+}
+
+impl CommandSpec for ReservedU16 {
+    // base opcode for the ReservedU16 range (0x41..=0x4E)
+    fn opcode(&self) -> u8 {
+        self.opcode
+    }
+    fn to_vgm_bytes(&self, dest: &mut Vec<u8>) {
+        dest.push(self.opcode());
+        dest.push(self.dd1);
+        dest.push(self.dd2);
+    }
+    fn parse(bytes: &[u8], offset: usize, opcode: u8) -> Result<(Self, usize), ParseError>
+    where
+        Self: Sized,
+    {
+        let dd1 = read_u8_at(bytes, offset)?;
+        let dd2 = read_u8_at(bytes, offset + 1)?;
+        Ok((ReservedU16 { opcode, dd1, dd2 }, 2))
+    }
+}
+
+impl CommandSpec for ReservedU24 {
+    // base opcode for one of the ReservedU24 ranges (0xC9..=0xCF / 0xD7..=0xDF)
+    fn opcode(&self) -> u8 {
+        self.opcode
+    }
+    fn to_vgm_bytes(&self, dest: &mut Vec<u8>) {
+        dest.push(self.opcode());
+        dest.push(self.dd1);
+        dest.push(self.dd2);
+        dest.push(self.dd3);
+    }
+    fn parse(bytes: &[u8], offset: usize, opcode: u8) -> Result<(Self, usize), ParseError>
+    where
+        Self: Sized,
+    {
+        let dd1 = read_u8_at(bytes, offset)?;
+        let dd2 = read_u8_at(bytes, offset + 1)?;
+        let dd3 = read_u8_at(bytes, offset + 2)?;
+        Ok((
+            ReservedU24 {
+                opcode,
+                dd1,
+                dd2,
+                dd3,
+            },
+            3,
+        ))
+    }
+}
+
+impl CommandSpec for ReservedU32 {
+    // base opcode for the ReservedU32 range (0xE2..=0xFF)
+    fn opcode(&self) -> u8 {
+        self.opcode
+    }
+    fn to_vgm_bytes(&self, dest: &mut Vec<u8>) {
+        dest.push(self.opcode());
+        dest.push(self.dd1);
+        dest.push(self.dd2);
+        dest.push(self.dd3);
+        dest.push(self.dd4);
+    }
+    fn parse(bytes: &[u8], offset: usize, opcode: u8) -> Result<(Self, usize), ParseError>
+    where
+        Self: Sized,
+    {
+        let dd1 = read_u8_at(bytes, offset)?;
+        let dd2 = read_u8_at(bytes, offset + 1)?;
+        let dd3 = read_u8_at(bytes, offset + 2)?;
+        let dd4 = read_u8_at(bytes, offset + 3)?;
+        Ok((
+            ReservedU32 {
+                opcode,
+                dd1,
+                dd2,
+                dd3,
+                dd4,
+            },
+            4,
+        ))
+    }
+}
+
 impl From<Ay8910StereoMask> for VgmCommand {
     fn from(s: Ay8910StereoMask) -> Self {
         VgmCommand::AY8910StereoMask(s)
@@ -674,272 +813,296 @@ impl From<SeekOffset> for VgmCommand {
     }
 }
 
-impl From<(ChipId, chip::PsgSpec)> for VgmCommand {
-    fn from(v: (ChipId, chip::PsgSpec)) -> Self {
+impl From<ReservedU8> for VgmCommand {
+    fn from(s: ReservedU8) -> Self {
+        VgmCommand::ReservedU8Write(s)
+    }
+}
+
+impl From<ReservedU16> for VgmCommand {
+    fn from(s: ReservedU16) -> Self {
+        VgmCommand::ReservedU16Write(s)
+    }
+}
+
+impl From<ReservedU24> for VgmCommand {
+    fn from(s: ReservedU24) -> Self {
+        VgmCommand::ReservedU24Write(s)
+    }
+}
+
+impl From<ReservedU32> for VgmCommand {
+    fn from(s: ReservedU32) -> Self {
+        VgmCommand::ReservedU32Write(s)
+    }
+}
+
+impl From<(Instance, chip::PsgSpec)> for VgmCommand {
+    fn from(v: (Instance, chip::PsgSpec)) -> Self {
         VgmCommand::Sn76489Write(v.0, v.1)
     }
 }
 
-impl From<(ChipId, chip::Ym2413Spec)> for VgmCommand {
-    fn from(v: (ChipId, chip::Ym2413Spec)) -> Self {
+impl From<(Instance, chip::Ym2413Spec)> for VgmCommand {
+    fn from(v: (Instance, chip::Ym2413Spec)) -> Self {
         VgmCommand::Ym2413Write(v.0, v.1)
     }
 }
 
-impl From<(ChipId, chip::Ym2612Spec)> for VgmCommand {
-    fn from(v: (ChipId, chip::Ym2612Spec)) -> Self {
+impl From<(Instance, chip::Ym2612Spec)> for VgmCommand {
+    fn from(v: (Instance, chip::Ym2612Spec)) -> Self {
         VgmCommand::Ym2612Write(v.0, v.1)
     }
 }
 
-impl From<(ChipId, chip::Ym2151Spec)> for VgmCommand {
-    fn from(v: (ChipId, chip::Ym2151Spec)) -> Self {
+impl From<(Instance, chip::Ym2151Spec)> for VgmCommand {
+    fn from(v: (Instance, chip::Ym2151Spec)) -> Self {
         VgmCommand::Ym2151Write(v.0, v.1)
     }
 }
 
-impl From<(ChipId, chip::SegaPcmSpec)> for VgmCommand {
-    fn from(v: (ChipId, chip::SegaPcmSpec)) -> Self {
+impl From<(Instance, chip::SegaPcmSpec)> for VgmCommand {
+    fn from(v: (Instance, chip::SegaPcmSpec)) -> Self {
         VgmCommand::SegaPcmWrite(v.0, v.1)
     }
 }
 
-impl From<(ChipId, chip::Rf5c68Spec)> for VgmCommand {
-    fn from(v: (ChipId, chip::Rf5c68Spec)) -> Self {
+impl From<(Instance, chip::Rf5c68Spec)> for VgmCommand {
+    fn from(v: (Instance, chip::Rf5c68Spec)) -> Self {
         VgmCommand::Rf5c68Write(v.0, v.1)
     }
 }
 
-impl From<(ChipId, chip::Ym2203Spec)> for VgmCommand {
-    fn from(v: (ChipId, chip::Ym2203Spec)) -> Self {
+impl From<(Instance, chip::Ym2203Spec)> for VgmCommand {
+    fn from(v: (Instance, chip::Ym2203Spec)) -> Self {
         VgmCommand::Ym2203Write(v.0, v.1)
     }
 }
 
-impl From<(ChipId, chip::Ym2608Spec)> for VgmCommand {
-    fn from(v: (ChipId, chip::Ym2608Spec)) -> Self {
+impl From<(Instance, chip::Ym2608Spec)> for VgmCommand {
+    fn from(v: (Instance, chip::Ym2608Spec)) -> Self {
         VgmCommand::Ym2608Write(v.0, v.1)
     }
 }
 
-impl From<(ChipId, chip::Ym2610Spec)> for VgmCommand {
-    fn from(v: (ChipId, chip::Ym2610Spec)) -> Self {
+impl From<(Instance, chip::Ym2610Spec)> for VgmCommand {
+    fn from(v: (Instance, chip::Ym2610Spec)) -> Self {
         VgmCommand::Ym2610bWrite(v.0, v.1)
     }
 }
 
-impl From<(ChipId, chip::Ym3812Spec)> for VgmCommand {
-    fn from(v: (ChipId, chip::Ym3812Spec)) -> Self {
+impl From<(Instance, chip::Ym3812Spec)> for VgmCommand {
+    fn from(v: (Instance, chip::Ym3812Spec)) -> Self {
         VgmCommand::Ym3812Write(v.0, v.1)
     }
 }
 
-impl From<(ChipId, chip::Ym3526Spec)> for VgmCommand {
-    fn from(v: (ChipId, chip::Ym3526Spec)) -> Self {
+impl From<(Instance, chip::Ym3526Spec)> for VgmCommand {
+    fn from(v: (Instance, chip::Ym3526Spec)) -> Self {
         VgmCommand::Ym3526Write(v.0, v.1)
     }
 }
 
-impl From<(ChipId, chip::Y8950Spec)> for VgmCommand {
-    fn from(v: (ChipId, chip::Y8950Spec)) -> Self {
+impl From<(Instance, chip::Y8950Spec)> for VgmCommand {
+    fn from(v: (Instance, chip::Y8950Spec)) -> Self {
         VgmCommand::Y8950Write(v.0, v.1)
     }
 }
 
-impl From<(ChipId, chip::Ymf262Spec)> for VgmCommand {
-    fn from(v: (ChipId, chip::Ymf262Spec)) -> Self {
+impl From<(Instance, chip::Ymf262Spec)> for VgmCommand {
+    fn from(v: (Instance, chip::Ymf262Spec)) -> Self {
         VgmCommand::Ymf262Write(v.0, v.1)
     }
 }
 
-impl From<(ChipId, chip::Ymf278bSpec)> for VgmCommand {
-    fn from(v: (ChipId, chip::Ymf278bSpec)) -> Self {
+impl From<(Instance, chip::Ymf278bSpec)> for VgmCommand {
+    fn from(v: (Instance, chip::Ymf278bSpec)) -> Self {
         VgmCommand::Ymf278bWrite(v.0, v.1)
     }
 }
 
-impl From<(ChipId, chip::Ymf271Spec)> for VgmCommand {
-    fn from(v: (ChipId, chip::Ymf271Spec)) -> Self {
+impl From<(Instance, chip::Ymf271Spec)> for VgmCommand {
+    fn from(v: (Instance, chip::Ymf271Spec)) -> Self {
         VgmCommand::Ymf271Write(v.0, v.1)
     }
 }
 
-impl From<(ChipId, chip::Scc1Spec)> for VgmCommand {
-    fn from(v: (ChipId, chip::Scc1Spec)) -> Self {
+impl From<(Instance, chip::Scc1Spec)> for VgmCommand {
+    fn from(v: (Instance, chip::Scc1Spec)) -> Self {
         VgmCommand::Scc1Write(v.0, v.1)
     }
 }
 
-impl From<(ChipId, chip::Ymz280bSpec)> for VgmCommand {
-    fn from(v: (ChipId, chip::Ymz280bSpec)) -> Self {
+impl From<(Instance, chip::Ymz280bSpec)> for VgmCommand {
+    fn from(v: (Instance, chip::Ymz280bSpec)) -> Self {
         VgmCommand::Ymz280bWrite(v.0, v.1)
     }
 }
 
-impl From<(ChipId, chip::Rf5c164Spec)> for VgmCommand {
-    fn from(v: (ChipId, chip::Rf5c164Spec)) -> Self {
+impl From<(Instance, chip::Rf5c164Spec)> for VgmCommand {
+    fn from(v: (Instance, chip::Rf5c164Spec)) -> Self {
         VgmCommand::Rf5c164Write(v.0, v.1)
     }
 }
 
-impl From<(ChipId, chip::PwmSpec)> for VgmCommand {
-    fn from(v: (ChipId, chip::PwmSpec)) -> Self {
+impl From<(Instance, chip::PwmSpec)> for VgmCommand {
+    fn from(v: (Instance, chip::PwmSpec)) -> Self {
         VgmCommand::PwmWrite(v.0, v.1)
     }
 }
 
-impl From<(ChipId, chip::Ay8910Spec)> for VgmCommand {
-    fn from(v: (ChipId, chip::Ay8910Spec)) -> Self {
+impl From<(Instance, chip::Ay8910Spec)> for VgmCommand {
+    fn from(v: (Instance, chip::Ay8910Spec)) -> Self {
         VgmCommand::Ay8910Write(v.0, v.1)
     }
 }
 
-impl From<(ChipId, chip::GbDmgSpec)> for VgmCommand {
-    fn from(v: (ChipId, chip::GbDmgSpec)) -> Self {
+impl From<(Instance, chip::GbDmgSpec)> for VgmCommand {
+    fn from(v: (Instance, chip::GbDmgSpec)) -> Self {
         VgmCommand::GbDmgWrite(v.0, v.1)
     }
 }
 
-impl From<(ChipId, chip::NesApuSpec)> for VgmCommand {
-    fn from(v: (ChipId, chip::NesApuSpec)) -> Self {
+impl From<(Instance, chip::NesApuSpec)> for VgmCommand {
+    fn from(v: (Instance, chip::NesApuSpec)) -> Self {
         VgmCommand::NesApuWrite(v.0, v.1)
     }
 }
 
-impl From<(ChipId, chip::MultiPcmSpec)> for VgmCommand {
-    fn from(v: (ChipId, chip::MultiPcmSpec)) -> Self {
+impl From<(Instance, chip::MultiPcmSpec)> for VgmCommand {
+    fn from(v: (Instance, chip::MultiPcmSpec)) -> Self {
         VgmCommand::MultiPcmWrite(v.0, v.1)
     }
 }
 
-impl From<(ChipId, chip::Upd7759Spec)> for VgmCommand {
-    fn from(v: (ChipId, chip::Upd7759Spec)) -> Self {
+impl From<(Instance, chip::Upd7759Spec)> for VgmCommand {
+    fn from(v: (Instance, chip::Upd7759Spec)) -> Self {
         VgmCommand::Upd7759Write(v.0, v.1)
     }
 }
 
-impl From<(ChipId, chip::Okim6258Spec)> for VgmCommand {
-    fn from(v: (ChipId, chip::Okim6258Spec)) -> Self {
+impl From<(Instance, chip::Okim6258Spec)> for VgmCommand {
+    fn from(v: (Instance, chip::Okim6258Spec)) -> Self {
         VgmCommand::Okim6258Write(v.0, v.1)
     }
 }
 
-impl From<(ChipId, chip::Okim6295Spec)> for VgmCommand {
-    fn from(v: (ChipId, chip::Okim6295Spec)) -> Self {
+impl From<(Instance, chip::Okim6295Spec)> for VgmCommand {
+    fn from(v: (Instance, chip::Okim6295Spec)) -> Self {
         VgmCommand::Okim6295Write(v.0, v.1)
     }
 }
 
-impl From<(ChipId, chip::K051649Spec)> for VgmCommand {
-    fn from(v: (ChipId, chip::K051649Spec)) -> Self {
+impl From<(Instance, chip::K051649Spec)> for VgmCommand {
+    fn from(v: (Instance, chip::K051649Spec)) -> Self {
         VgmCommand::K051649Write(v.0, v.1)
     }
 }
 
-impl From<(ChipId, chip::K054539Spec)> for VgmCommand {
-    fn from(v: (ChipId, chip::K054539Spec)) -> Self {
+impl From<(Instance, chip::K054539Spec)> for VgmCommand {
+    fn from(v: (Instance, chip::K054539Spec)) -> Self {
         VgmCommand::K054539Write(v.0, v.1)
     }
 }
 
-impl From<(ChipId, chip::Huc6280Spec)> for VgmCommand {
-    fn from(v: (ChipId, chip::Huc6280Spec)) -> Self {
+impl From<(Instance, chip::Huc6280Spec)> for VgmCommand {
+    fn from(v: (Instance, chip::Huc6280Spec)) -> Self {
         VgmCommand::Huc6280Write(v.0, v.1)
     }
 }
 
-impl From<(ChipId, chip::C140Spec)> for VgmCommand {
-    fn from(v: (ChipId, chip::C140Spec)) -> Self {
+impl From<(Instance, chip::C140Spec)> for VgmCommand {
+    fn from(v: (Instance, chip::C140Spec)) -> Self {
         VgmCommand::C140Write(v.0, v.1)
     }
 }
 
-impl From<(ChipId, chip::K053260Spec)> for VgmCommand {
-    fn from(v: (ChipId, chip::K053260Spec)) -> Self {
+impl From<(Instance, chip::K053260Spec)> for VgmCommand {
+    fn from(v: (Instance, chip::K053260Spec)) -> Self {
         VgmCommand::K053260Write(v.0, v.1)
     }
 }
 
-impl From<(ChipId, chip::PokeySpec)> for VgmCommand {
-    fn from(v: (ChipId, chip::PokeySpec)) -> Self {
+impl From<(Instance, chip::PokeySpec)> for VgmCommand {
+    fn from(v: (Instance, chip::PokeySpec)) -> Self {
         VgmCommand::PokeyWrite(v.0, v.1)
     }
 }
 
-impl From<(ChipId, chip::QsoundSpec)> for VgmCommand {
-    fn from(v: (ChipId, chip::QsoundSpec)) -> Self {
+impl From<(Instance, chip::QsoundSpec)> for VgmCommand {
+    fn from(v: (Instance, chip::QsoundSpec)) -> Self {
         VgmCommand::QsoundWrite(v.0, v.1)
     }
 }
 
-impl From<(ChipId, chip::ScspSpec)> for VgmCommand {
-    fn from(v: (ChipId, chip::ScspSpec)) -> Self {
+impl From<(Instance, chip::ScspSpec)> for VgmCommand {
+    fn from(v: (Instance, chip::ScspSpec)) -> Self {
         VgmCommand::ScspWrite(v.0, v.1)
     }
 }
 
-impl From<(ChipId, chip::WonderSwanSpec)> for VgmCommand {
-    fn from(v: (ChipId, chip::WonderSwanSpec)) -> Self {
+impl From<(Instance, chip::WonderSwanSpec)> for VgmCommand {
+    fn from(v: (Instance, chip::WonderSwanSpec)) -> Self {
         VgmCommand::WonderSwanWrite(v.0, v.1)
     }
 }
 
-impl From<(ChipId, chip::VsuSpec)> for VgmCommand {
-    fn from(v: (ChipId, chip::VsuSpec)) -> Self {
+impl From<(Instance, chip::VsuSpec)> for VgmCommand {
+    fn from(v: (Instance, chip::VsuSpec)) -> Self {
         VgmCommand::VsuWrite(v.0, v.1)
     }
 }
 
-impl From<(ChipId, chip::Saa1099Spec)> for VgmCommand {
-    fn from(v: (ChipId, chip::Saa1099Spec)) -> Self {
+impl From<(Instance, chip::Saa1099Spec)> for VgmCommand {
+    fn from(v: (Instance, chip::Saa1099Spec)) -> Self {
         VgmCommand::Saa1099Write(v.0, v.1)
     }
 }
 
-impl From<(ChipId, chip::Es5503Spec)> for VgmCommand {
-    fn from(v: (ChipId, chip::Es5503Spec)) -> Self {
+impl From<(Instance, chip::Es5503Spec)> for VgmCommand {
+    fn from(v: (Instance, chip::Es5503Spec)) -> Self {
         VgmCommand::Es5503Write(v.0, v.1)
     }
 }
 
-impl From<(ChipId, chip::Es5506U8Spec)> for VgmCommand {
-    fn from(v: (ChipId, chip::Es5506U8Spec)) -> Self {
+impl From<(Instance, chip::Es5506U8Spec)> for VgmCommand {
+    fn from(v: (Instance, chip::Es5506U8Spec)) -> Self {
         VgmCommand::Es5506BEWrite(v.0, v.1)
     }
 }
 
-impl From<(ChipId, chip::Es5506U16Spec)> for VgmCommand {
-    fn from(v: (ChipId, chip::Es5506U16Spec)) -> Self {
+impl From<(Instance, chip::Es5506U16Spec)> for VgmCommand {
+    fn from(v: (Instance, chip::Es5506U16Spec)) -> Self {
         VgmCommand::Es5506D6Write(v.0, v.1)
     }
 }
 
-impl From<(ChipId, chip::X1010Spec)> for VgmCommand {
-    fn from(v: (ChipId, chip::X1010Spec)) -> Self {
+impl From<(Instance, chip::X1010Spec)> for VgmCommand {
+    fn from(v: (Instance, chip::X1010Spec)) -> Self {
         VgmCommand::X1010Write(v.0, v.1)
     }
 }
 
-impl From<(ChipId, chip::C352Spec)> for VgmCommand {
-    fn from(v: (ChipId, chip::C352Spec)) -> Self {
+impl From<(Instance, chip::C352Spec)> for VgmCommand {
+    fn from(v: (Instance, chip::C352Spec)) -> Self {
         VgmCommand::C352Write(v.0, v.1)
     }
 }
 
-impl From<(ChipId, chip::Ga20Spec)> for VgmCommand {
-    fn from(v: (ChipId, chip::Ga20Spec)) -> Self {
+impl From<(Instance, chip::Ga20Spec)> for VgmCommand {
+    fn from(v: (Instance, chip::Ga20Spec)) -> Self {
         VgmCommand::Ga20Write(v.0, v.1)
     }
 }
 
-impl From<(ChipId, chip::MikeySpec)> for VgmCommand {
-    fn from(v: (ChipId, chip::MikeySpec)) -> Self {
+impl From<(Instance, chip::MikeySpec)> for VgmCommand {
+    fn from(v: (Instance, chip::MikeySpec)) -> Self {
         VgmCommand::MikeyWrite(v.0, v.1)
     }
 }
 
-impl From<(ChipId, chip::GameGearPsgSpec)> for VgmCommand {
-    fn from(v: (ChipId, chip::GameGearPsgSpec)) -> Self {
+impl From<(Instance, chip::GameGearPsgSpec)> for VgmCommand {
+    fn from(v: (Instance, chip::GameGearPsgSpec)) -> Self {
         VgmCommand::GameGearPsgWrite(v.0, v.1)
     }
 }
@@ -2086,9 +2249,10 @@ impl VgmDocument {
     /// This constructs the VGM header (including GD3 and data offsets),
     /// serializes the document's command stream into VGM command bytes,
     /// appends an End-of-Data opcode if one is not already present, and
-    /// appends optional GD3 metadata. Header fields that depend on the
-    /// serialized size (for example file size and GD3 offset) are updated
-    /// in-place before the final byte vector is returned.
+    /// appends optional extra-header and GD3 metadata. Header fields that
+    /// depend on the serialized size (for example file size, extra-header
+    /// offset and GD3 offset) are updated in-place before the final byte
+    /// vector is returned.
     pub(crate) fn to_bytes(&self) -> Vec<u8> {
         let cmd_buf = self.commands_to_bytes_up_to(self.commands.len());
 
@@ -2097,61 +2261,107 @@ impl VgmDocument {
             .iter()
             .any(|c| matches!(c, VgmCommand::EndOfData(_)));
 
-        // GD3 offset: if present, it will be placed after header+cmd_buf
-        let gd3_offset: u32 = match &self.gd3 {
-            Some(_) => VGM_V171_HEADER_SIZE
-                .wrapping_add(cmd_buf.len() as u32)
-                .wrapping_sub(0x14),
-            None => 0,
-        };
-
         // data offset (0x34)
         let data_offset: u32 = match self.header.data_offset {
             0 => VGM_V171_HEADER_SIZE.wrapping_sub(0x34),
             v => v,
         };
 
-        // Build header bytes using VgmHeader::to_bytes
-        let mut buf = self.header.to_bytes(gd3_offset, data_offset);
+        // Build header bytes
+        let mut header = self.header.to_bytes(0, data_offset);
 
-        buf.extend_from_slice(&cmd_buf);
+        // Build extra_header bytes
+        if let Some(extra_header) = &self.extra_header {
+            let extra_bytes = extra_header.to_bytes();
+            if self.header.extra_header_offset != 0 {
+                let stored_offset = self.header.extra_header_offset;
+                let desired_start = stored_offset.wrapping_add(0xBC) as usize;
+
+                // Compute the canonical header region size (0x34 + data_offset)
+                // and ensure the requested placement does not invade the data
+                // region. If it does, clear the stored offset to avoid corrupting
+                // the data region. Otherwise place the extra header bytes at the
+                // requested absolute location within the header buffer.
+                let header_size = 0x34_usize.wrapping_add(data_offset as usize);
+                if desired_start >= header_size {
+                    // Requested placement would start at/after the data region;
+                    // clear the extra_header_offset to prevent corruption.
+                    header[0xBC..0xC0].copy_from_slice(&0u32.to_le_bytes());
+                } else {
+                    // Place the extra header at desired_start. The header buffer
+                    // produced by `to_bytes` was sized according to data_offset,
+                    // so we should write into that reserved header area when
+                    // possible; otherwise resize/append as needed.
+                    let place_end = desired_start + extra_bytes.len();
+                    if place_end <= header.len() {
+                        // Fully within current buffer: overwrite in place.
+                        header[desired_start..place_end].copy_from_slice(&extra_bytes);
+                    } else if desired_start <= header.len() {
+                        // Partially overlaps the end: append the remainder.
+                        let append_from = header.len().saturating_sub(desired_start);
+                        header.extend_from_slice(&extra_bytes[append_from..]);
+                    } else {
+                        // Desired start beyond current length: create gap and append.
+                        header.resize(desired_start, 0);
+                        header.extend_from_slice(&extra_bytes);
+                    }
+
+                    // Preserve the stored offset value in the main header's field.
+                    header[0xBC..0xC0].copy_from_slice(&stored_offset.to_le_bytes());
+                }
+            } else {
+                let extra_start = header.len() as u32;
+                let extra_offset_val = extra_start.wrapping_sub(0xBC_u32);
+                header.extend_from_slice(&extra_bytes);
+                header[0xBC..0xC0].copy_from_slice(&extra_offset_val.to_le_bytes());
+            }
+        } else {
+            header[0xBC..0xC0].copy_from_slice(&0u32.to_le_bytes());
+        }
+
+        // Append command stream and ensure EndOfData opcode is present.
+        header.extend_from_slice(&cmd_buf);
         if !wrote_end_in_cmds {
             let end_spec = EndOfData;
-            buf.push(end_spec.opcode());
+            header.push(end_spec.opcode());
         }
 
         // If GD3 metadata is present, append the full GD3 chunk and update
         // the header's GD3 offset field to point to its location.
         if let Some(gd3) = &self.gd3 {
-            let gd3_start = buf.len() as u32;
+            let gd3_start = header.len() as u32;
             let gd3_offset_val = gd3_start.wrapping_sub(0x14u32);
             let gd3_bytes = gd3.to_bytes();
-            buf.extend_from_slice(&gd3_bytes);
+            header.extend_from_slice(&gd3_bytes);
             let gd3_off_bytes = gd3_offset_val.to_le_bytes();
-            buf[0x14..0x18].copy_from_slice(&gd3_off_bytes);
+            header[0x14..0x18].copy_from_slice(&gd3_off_bytes);
+        } else {
+            // Ensure GD3 offset field is zero when absent.
+            header[0x14..0x18].copy_from_slice(&0u32.to_le_bytes());
         }
 
-        let file_size = buf.len() as u32;
+        // Update EOF offset (file size - 4) in header (0x04..0x08).
+        let file_size = header.len() as u32;
         let eof_offset = file_size.wrapping_sub(4);
         let eof_bytes = eof_offset.to_le_bytes();
-        buf[0x04..0x08].copy_from_slice(&eof_bytes);
+        header[0x04..0x08].copy_from_slice(&eof_bytes);
 
-        buf
+        header
     }
 
     /// `spec_to_vgm_bytes` is a module-visible associated helper used to
     /// convert a chip-specific `CommandSpec` into bytes while adjusting the
     /// opcode according to the chip instance (primary/secondary).
     pub(crate) fn spec_to_vgm_bytes<C: crate::vgm::command::CommandSpec + ?Sized>(
-        chip_id: crate::vgm::command::ChipId,
+        chip_id: crate::vgm::command::Instance,
         spec: &C,
         cmd_buf: &mut Vec<u8>,
     ) {
         let start = cmd_buf.len();
         spec.to_vgm_bytes(cmd_buf);
         cmd_buf[start] = match chip_id {
-            crate::vgm::command::ChipId::Primary => cmd_buf[start],
-            crate::vgm::command::ChipId::Secondary => cmd_buf[start].wrapping_add(0x50),
+            crate::vgm::command::Instance::Primary => cmd_buf[start],
+            crate::vgm::command::Instance::Secondary => cmd_buf[start].wrapping_add(0x50),
         };
     }
 
@@ -2239,6 +2449,10 @@ impl VgmDocument {
             Ga20Write(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
             MikeyWrite(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
             GameGearPsgWrite(id, s) => Self::spec_to_vgm_bytes(*id, s, &mut buf),
+            ReservedU8Write(s) => s.to_vgm_bytes(&mut buf),
+            ReservedU16Write(s) => s.to_vgm_bytes(&mut buf),
+            ReservedU24Write(s) => s.to_vgm_bytes(&mut buf),
+            ReservedU32Write(s) => s.to_vgm_bytes(&mut buf),
         }
         let len = buf.len();
 

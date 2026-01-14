@@ -15,18 +15,18 @@
 //! Builder example:
 //!
 //! ```rust
-//! use soundlog::{ChipId, VgmBuilder, VgmCommand, VgmDocument};
+//! use soundlog::{VgmBuilder, VgmCommand, VgmDocument};
 //! use soundlog::chip::{Chip, Ym2612Spec};
-//! use soundlog::vgm::command::WaitSamples;
+//! use soundlog::vgm::command::{WaitSamples, Instance};
 //! use soundlog::meta::Gd3;
 //!
 //! let mut builder = VgmBuilder::new();
 //!
 //! // Register the chip's master clock in the VGM header (in Hz)
-//! builder.register_chip(Chip::Ym2612, ChipId::Primary, 7_670_454);
+//! builder.register_chip(Chip::Ym2612, Instance::Primary, 7_670_454);
 //! // Append chip register writes using a chip-specific spec
 //! builder.add_chip_write(
-//!     ChipId::Primary,
+//!     Instance::Primary,
 //!     Ym2612Spec {
 //!         port: 0,
 //!         register: 0x22,
@@ -54,7 +54,7 @@
 //!
 //! ```rust
 //! use soundlog::{VgmBuilder, VgmDocument};
-//! use soundlog::vgm::command::{VgmCommand, WaitSamples};
+//! use soundlog::vgm::command::{Instance, VgmCommand, WaitSamples};
 //!
 //! // Read VGM bytes from somewhere
 //! let bytes: Vec<u8> = /* read a .vgm file */ Vec::new();
@@ -86,15 +86,9 @@
 mod binutil;
 pub mod chip;
 pub mod meta;
-mod tests;
 pub mod vgm;
 mod xgm;
 
 pub use binutil::ParseError;
-pub use vgm::VgmHeader;
-pub use vgm::command::{
-    Ay8910StereoMask, ChipId, DataBlock, EndOfData, PcmRamWrite, SeekOffset, SetStreamFrequency,
-    SetupStreamControl, StartStream, StartStreamFastCall, StopStream, VgmCommand, Wait735Samples,
-    Wait882Samples, WaitNSample, WaitSamples, Ym2612Port0Address2AWriteAndWaitN,
-};
-pub use vgm::{VgmBuilder, VgmDocument};
+pub use vgm::command::*;
+pub use vgm::{VgmBuilder, VgmDocument, VgmExtraHeader, VgmHeader};

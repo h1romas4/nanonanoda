@@ -1,14 +1,14 @@
 use crate::chip;
 use crate::meta::Gd3;
-use crate::vgm::command::ChipId;
+use crate::vgm::command::Instance;
 use crate::vgm::command::VgmCommand;
-use crate::vgm::header::VgmHeader;
+use crate::vgm::header::{VgmExtraHeader, VgmHeader};
 use crate::vgm::parser;
 use std::convert::TryFrom;
 
 #[derive(Debug, Clone, PartialEq, Default)]
 /// A complete VGM document, consisting of a header, an ordered command
-/// stream, and optional GD3 metadata.
+/// stream, and optional GD3 metadata and an optional extra header.
 ///
 /// Construct `VgmDocument` instances using `VgmBuilder`. Once assembled,
 /// call `VgmDocument::to_bytes()` to obtain the serialized VGM file
@@ -17,6 +17,7 @@ pub struct VgmDocument {
     pub header: VgmHeader,
     pub commands: Vec<VgmCommand>,
     pub gd3: Option<Gd3>,
+    pub extra_header: Option<VgmExtraHeader>,
 }
 
 /// Builder for assembling a `VgmDocument`.
@@ -58,10 +59,10 @@ impl VgmBuilder {
     pub fn register_chip<C, I>(&mut self, c: C, chip_id: I, master_clock: u32)
     where
         C: Into<chip::Chip>,
-        I: Into<ChipId>,
+        I: Into<Instance>,
     {
         let ch: chip::Chip = c.into();
-        let instance: ChipId = chip_id.into();
+        let instance: Instance = chip_id.into();
 
         self.document
             .header
@@ -97,8 +98,8 @@ impl VgmBuilder {
     /// `VgmCommand` into the builder's command stream. Returns `&mut Self`.
     pub fn add_chip_write<C, I>(&mut self, chip_id: I, spec: C) -> &mut Self
     where
-        I: Into<ChipId>,
-        (ChipId, C): Into<VgmCommand>,
+        I: Into<Instance>,
+        (Instance, C): Into<VgmCommand>,
     {
         self.document.commands.push((chip_id.into(), spec).into());
         self
@@ -110,6 +111,15 @@ impl VgmBuilder {
     /// `VgmDocument` so it will be present on the finalized document.
     pub fn set_gd3(&mut self, gd3: Gd3) -> &mut Self {
         self.document.gd3 = Some(gd3);
+        self
+    }
+
+    /// Set the extra-header for the document under construction.
+    ///
+    /// This stores the provided `VgmExtraHeader` into the builder's internal
+    /// `VgmDocument` so it will be included when the document is serialized.
+    pub fn set_extra_header(&mut self, extra: VgmExtraHeader) -> &mut Self {
+        self.document.extra_header = Some(extra);
         self
     }
 
@@ -126,18 +136,43 @@ impl VgmBuilder {
         let total_sample = self.document.total_samples();
         self.document.header.total_samples = total_sample;
 
+        // compute data_offset the same way as VgmDocument::to_bytes
+        let data_offset: u32 = match self.document.header.data_offset {
+            0 => crate::vgm::header::VGM_V171_HEADER_SIZE.wrapping_sub(0x34),
+            v => v,
+        };
+
+        // If an extra_header has been attached, and the header does not
+        // already contain a stored extra_header_offset, set it so that the
+        // extra header will be placed immediately after the main header in
+        // the serialized output. The offset is stored relative to 0xBC.
+        //
+        // Additionally, compute the serialized length of the extra header and
+        // update the header's `data_offset` so the on-disk header correctly
+        // reflects the final header size that includes the extra header.
+        if self.document.extra_header.is_some() && self.document.header.extra_header_offset == 0 {
+            // compute the header length as it will be before inserting the extra header
+            let header_len = self.document.header.to_bytes(0, data_offset).len() as u32;
+            let extra_offset = header_len.wrapping_sub(0xBC_u32);
+            self.document.header.extra_header_offset = extra_offset;
+
+            // If we have the extra header available, compute its serialized
+            // size and update the header.data_offset so the final header size
+            // (0x34 + data_offset) will cover the inserted extra header.
+            if let Some(eh) = &self.document.extra_header {
+                let extra_bytes_len = eh.to_bytes().len() as u32;
+                let new_header_len = header_len.wrapping_add(extra_bytes_len);
+                let new_data_offset = new_header_len.wrapping_sub(0x34_u32);
+                self.document.header.data_offset = new_data_offset;
+            }
+        }
+
         // If loop index is set, compute byte offset to that command and
         // set header.loop_offset = absolute_offset - 0x1C per VGM spec.
         if let Some(index) = self.loop_index
             && index < self.document.commands.len()
         {
-            // compute data_offset the same way as VgmDocument::to_bytes
-            let data_offset: u32 = match self.document.header.data_offset {
-                0 => crate::vgm::header::VGM_V171_HEADER_SIZE.wrapping_sub(0x34),
-                v => v,
-            };
-
-            // header length depends only on data_offset (gd3_offset not needed here)
+            // header length depends on data_offset and may include an extra-header now
             let header_len = self.document.header.to_bytes(0, data_offset).len() as u32;
 
             // Use command_offsets_and_lengths to obtain the offset of the command

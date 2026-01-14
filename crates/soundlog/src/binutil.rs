@@ -3,6 +3,7 @@
 #[derive(Debug, Clone)]
 pub enum ParseError {
     UnexpectedEof,
+    OffsetOutOfRange(usize),
     InvalidIdent([u8; 4]),
     UnsupportedVersion(u32),
     HeaderTooShort,
@@ -13,6 +14,7 @@ impl std::fmt::Display for ParseError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             ParseError::UnexpectedEof => write!(f, "unexpected end of input"),
+            ParseError::OffsetOutOfRange(off) => write!(f, "offset out of range: {}", off),
             ParseError::InvalidIdent(id) => write!(f, "invalid ident: {:?}", id),
             ParseError::UnsupportedVersion(v) => write!(f, "unsupported version: {}", v),
             ParseError::HeaderTooShort => write!(f, "header too short"),
@@ -25,7 +27,7 @@ impl std::error::Error for ParseError {}
 
 pub fn read_u32_le_at(bytes: &[u8], off: usize) -> Result<u32, ParseError> {
     if bytes.len() < off + 4 {
-        return Err(ParseError::UnexpectedEof);
+        return Err(ParseError::OffsetOutOfRange(off));
     }
     let mut tmp: [u8; 4] = [0; 4];
     tmp.copy_from_slice(&bytes[off..off + 4]);
@@ -34,7 +36,7 @@ pub fn read_u32_le_at(bytes: &[u8], off: usize) -> Result<u32, ParseError> {
 
 pub fn read_u16_le_at(bytes: &[u8], off: usize) -> Result<u16, ParseError> {
     if bytes.len() < off + 2 {
-        return Err(ParseError::UnexpectedEof);
+        return Err(ParseError::OffsetOutOfRange(off));
     }
     let mut tmp: [u8; 2] = [0; 2];
     tmp.copy_from_slice(&bytes[off..off + 2]);
@@ -43,21 +45,21 @@ pub fn read_u16_le_at(bytes: &[u8], off: usize) -> Result<u16, ParseError> {
 
 pub fn read_u8_at(bytes: &[u8], off: usize) -> Result<u8, ParseError> {
     if bytes.len() <= off {
-        return Err(ParseError::UnexpectedEof);
+        return Err(ParseError::OffsetOutOfRange(off));
     }
     Ok(bytes[off])
 }
 
 pub fn read_slice(bytes: &[u8], off: usize, len: usize) -> Result<&[u8], ParseError> {
     if bytes.len() < off + len {
-        return Err(ParseError::UnexpectedEof);
+        return Err(ParseError::OffsetOutOfRange(off));
     }
     Ok(&bytes[off..off + len])
 }
 
 pub fn read_u24_be_at(bytes: &[u8], off: usize) -> Result<u32, ParseError> {
     if bytes.len() < off + 3 {
-        return Err(ParseError::UnexpectedEof);
+        return Err(ParseError::OffsetOutOfRange(off));
     }
     let b0 = bytes[off] as u32;
     let b1 = bytes[off + 1] as u32;

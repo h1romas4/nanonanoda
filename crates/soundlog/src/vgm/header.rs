@@ -1,6 +1,6 @@
 use crate::binutil::{write_slice, write_u8, write_u16, write_u32};
 use crate::chip;
-use crate::vgm::command::ChipId;
+use crate::vgm::command::Instance;
 use crate::vgm::parser;
 use std::convert::TryFrom;
 
@@ -270,8 +270,9 @@ impl VgmHeader {
         write_slice(&mut buf, 0xE8, &self.reserved_e8_ef);
         // reserved (0xF0..0xFF)
         write_slice(&mut buf, 0xF0, &self.reserved_f0_ff);
+
         // truncate header buffer sized to `0x34 + data_offset`.
-        let header_size = 0x34u32.wrapping_add(data_offset) as usize;
+        let header_size = 0x34_u32.wrapping_add(data_offset) as usize;
         if header_size < buf.len() {
             buf.truncate(header_size);
         }
@@ -281,10 +282,10 @@ impl VgmHeader {
     /// Set the stored clock field for a chip `ch` at the given `instance`.
     /// For secondary instances the high bit is set on the stored value
     /// following VGM header convention.
-    pub fn set_chip_clock(&mut self, ch: chip::Chip, instance: ChipId, master_clock: u32) {
+    pub fn set_chip_clock(&mut self, ch: chip::Chip, instance: Instance, master_clock: u32) {
         let clock = match instance {
-            ChipId::Primary => master_clock,
-            ChipId::Secondary => master_clock | 0x8000_0000u32,
+            Instance::Primary => master_clock,
+            Instance::Secondary => master_clock | 0x8000_0000_u32,
         };
 
         match &ch {
@@ -342,5 +343,81 @@ impl TryFrom<&[u8]> for VgmHeader {
 
     fn try_from(bytes: &[u8]) -> Result<Self, Self::Error> {
         parser::parse_vgm_header(bytes).map(|(h, _)| h)
+    }
+}
+
+/// Extra header introduced in VGM v1.70.
+///
+/// Format summary (see VGM specification):
+/// - 32-bit LE header size (including this 4-byte size field)
+/// - 32-bit LE offset to chip-clock block (relative to start of extra header, 0 = none)
+/// - 32-bit LE offset to chip-volume block (relative to start of extra header, 0 = none)
+/// - additional data follows at offsets above
+#[derive(Debug, Clone, PartialEq)]
+pub struct VgmExtraHeader {
+    /// Full extra header size (as stored on-disk)
+    pub header_size: u32,
+    /// Offset (relative to start of extra header) to chip clock list (0 if absent)
+    pub chip_clock_offset: u32,
+    /// Offset (relative to start of extra header) to chip volume list (0 if absent)
+    pub chip_vol_offset: u32,
+
+    /// Parsed chip clock entries: (chip_id, clock)
+    /// chip_id is the 1-byte ID following the main header's chip order.
+    pub chip_clocks: Vec<(u8, u32)>,
+
+    /// Parsed chip volume entries: (chip_id_with_flags, flags, volume)
+    /// Each entry in the on-disk format is: 1 byte chip id, 1 byte flags, 2 bytes volume (LE).
+    pub chip_volumes: Vec<(u8, u8, u16)>,
+}
+
+impl VgmExtraHeader {
+    /// Serialize the extra header into bytes using the VGM extra-header format.
+    ///
+    /// The produced buffer contains the 12-byte header (size, offsets) followed
+    /// by optional chip-clock and chip-volume blocks when present. Offsets in
+    /// the header are expressed relative to the start of this extra header.
+    pub fn to_bytes(&self) -> Vec<u8> {
+        // Start with a 12-byte placeholder for header_size, chip_clock_offset, chip_vol_offset
+        let mut buf: Vec<u8> = vec![0u8; 12];
+
+        // chip_clock block
+        let chip_clock_offset: u32 = if !self.chip_clocks.is_empty() {
+            let off = buf.len() as u32;
+            // count (1 byte)
+            buf.push(self.chip_clocks.len() as u8);
+            // entries: chip_id (1 byte) + clock (4 bytes LE)
+            for (chip_id, clock) in &self.chip_clocks {
+                buf.push(*chip_id);
+                buf.extend_from_slice(&clock.to_le_bytes());
+            }
+            off
+        } else {
+            0u32
+        };
+
+        // chip_volume block
+        let chip_vol_offset: u32 = if !self.chip_volumes.is_empty() {
+            let off = buf.len() as u32;
+            // count (1 byte)
+            buf.push(self.chip_volumes.len() as u8);
+            // entries: chip_id (1 byte) + flags (1 byte) + volume (2 bytes LE)
+            for (chip_id, flags, volume) in &self.chip_volumes {
+                buf.push(*chip_id);
+                buf.push(*flags);
+                buf.extend_from_slice(&volume.to_le_bytes());
+            }
+            off
+        } else {
+            0u32
+        };
+
+        // Now fill in the 3 header fields
+        let header_size = buf.len() as u32;
+        buf[0..4].copy_from_slice(&header_size.to_le_bytes());
+        buf[4..8].copy_from_slice(&chip_clock_offset.to_le_bytes());
+        buf[8..12].copy_from_slice(&chip_vol_offset.to_le_bytes());
+
+        buf
     }
 }

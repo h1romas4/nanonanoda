@@ -2,13 +2,13 @@ use crate::binutil::{ParseError, read_slice, read_u8_at, read_u16_le_at, read_u3
 use crate::chip;
 use crate::meta::parse_gd3;
 use crate::vgm::command::{
-    Ay8910StereoMask, ChipId, CommandSpec, DataBlock, EndOfData, PcmRamWrite, SeekOffset,
-    SetStreamData, SetStreamFrequency, SetupStreamControl, StartStream, StartStreamFastCall,
-    StopStream, VgmCommand, Wait735Samples, Wait882Samples, WaitNSample, WaitSamples,
-    Ym2612Port0Address2AWriteAndWaitN,
+    Ay8910StereoMask, CommandSpec, DataBlock, EndOfData, Instance, PcmRamWrite, ReservedU8,
+    ReservedU16, ReservedU24, ReservedU32, SeekOffset, SetStreamData, SetStreamFrequency,
+    SetupStreamControl, StartStream, StartStreamFastCall, StopStream, VgmCommand, Wait735Samples,
+    Wait882Samples, WaitNSample, WaitSamples, Ym2612Port0Address2AWriteAndWaitN,
 };
 use crate::vgm::document::VgmDocument;
-use crate::vgm::header::{VGM_V171_HEADER_SIZE, VgmHeader};
+use crate::vgm::header::{VGM_V171_HEADER_SIZE, VgmExtraHeader, VgmHeader};
 
 /// Parse a complete VGM file from a byte slice into a `VgmDocument`.
 ///
@@ -44,10 +44,30 @@ pub(crate) fn parse_vgm(bytes: &[u8]) -> Result<VgmDocument, ParseError> {
     // Attach GD3 metadata if present (gd3_offset is stored as gd3_start - 0x14).
     let gd3 = if header.gd3_offset != 0 {
         let gd3_start = header.gd3_offset.wrapping_add(0x14) as usize;
-        if gd3_start < bytes.len() {
-            parse_gd3(&bytes[gd3_start..]).ok()
-        } else {
-            None
+        // If the computed start is outside the buffer, treat it as an out-of-range offset.
+        if gd3_start >= bytes.len() {
+            return Err(ParseError::OffsetOutOfRange(gd3_start));
+        }
+        // Attempt to parse GD3 and propagate any parse error to the caller.
+        match parse_gd3(&bytes[gd3_start..]) {
+            Ok(g) => Some(g),
+            Err(e) => return Err(e),
+        }
+    } else {
+        None
+    };
+
+    // Attach extra header if present (extra_header_offset stored at 0xBC in main header).
+    let extra_header = if header.extra_header_offset != 0 {
+        let start = header.extra_header_offset.wrapping_add(0xBC) as usize;
+        // If the computed start is outside the buffer, treat it as an out-of-range offset.
+        if start >= bytes.len() {
+            return Err(ParseError::OffsetOutOfRange(start));
+        }
+        // Parse the extra header and propagate any parse error to the caller.
+        match parse_vgm_extra_header(bytes, start) {
+            Ok((eh, _)) => Some(eh),
+            Err(e) => return Err(e),
         }
     } else {
         None
@@ -57,6 +77,7 @@ pub(crate) fn parse_vgm(bytes: &[u8]) -> Result<VgmDocument, ParseError> {
         header,
         commands,
         gd3,
+        extra_header,
     })
 }
 
@@ -100,7 +121,7 @@ pub(crate) fn parse_vgm_header(bytes: &[u8]) -> Result<(VgmHeader, usize), Parse
 
     let header_size = 0x34usize.wrapping_add(data_offset as usize);
     if bytes.len() < header_size {
-        return Err(ParseError::UnexpectedEof);
+        return Err(ParseError::OffsetOutOfRange(header_size));
     }
 
     let mut h = VgmHeader::default();
@@ -176,6 +197,63 @@ pub(crate) fn parse_vgm_header(bytes: &[u8]) -> Result<(VgmHeader, usize), Parse
     h.reserved_f0_ff.copy_from_slice(res_f0);
 
     Ok((h, header_size))
+}
+
+/// Parse a VGM extra-header (v1.70+) located at `offset` within `bytes`.
+///
+/// The extra header format:
+/// - u32 LE header_size (including this field)
+/// - u32 LE offset to chip-clock block (relative to start of extra header, 0 = none)
+/// - u32 LE offset to chip-volume block (relative to start of extra header, 0 = none)
+/// - optional chip-clock block: 1 byte count, then count * (1 byte chip_id + 4 byte LE clock)
+/// - optional chip-volume block: 1 byte count, then count * (1 byte chip_id + 1 byte flags + 2 byte LE volume)
+pub(crate) fn parse_vgm_extra_header(
+    bytes: &[u8],
+    offset: usize,
+) -> Result<(VgmExtraHeader, usize), ParseError> {
+    // Read the three header fields (12 bytes)
+    let header_size = read_u32_le_at(bytes, offset)?;
+    let chip_clock_offset = read_u32_le_at(bytes, offset + 4)?;
+    let chip_vol_offset = read_u32_le_at(bytes, offset + 8)?;
+
+    let mut extra = VgmExtraHeader {
+        header_size,
+        chip_clock_offset,
+        chip_vol_offset,
+        chip_clocks: Vec::new(),
+        chip_volumes: Vec::new(),
+    };
+
+    // Parse chip clocks block if present (offset is relative to extra header start)
+    if chip_clock_offset != 0 {
+        let cc_base = offset.wrapping_add(chip_clock_offset as usize);
+        // first byte is entry count
+        let count = read_u8_at(bytes, cc_base)?;
+        let mut cur = cc_base + 1;
+        for _ in 0..count {
+            let chip_id = read_u8_at(bytes, cur)?;
+            let clock = read_u32_le_at(bytes, cur + 1)?;
+            extra.chip_clocks.push((chip_id, clock));
+            cur = cur.wrapping_add(5);
+        }
+    }
+
+    // Parse chip volumes block if present (offset is relative to extra header start)
+    if chip_vol_offset != 0 {
+        let cv_base = offset.wrapping_add(chip_vol_offset as usize);
+        // first byte is entry count
+        let count = read_u8_at(bytes, cv_base)?;
+        let mut cur = cv_base + 1;
+        for _ in 0..count {
+            let chip_id = read_u8_at(bytes, cur)?;
+            let flags = read_u8_at(bytes, cur + 1)?;
+            let volume = read_u16_le_at(bytes, cur + 2)?;
+            extra.chip_volumes.push((chip_id, flags, volume));
+            cur = cur.wrapping_add(4);
+        }
+    }
+
+    Ok((extra, header_size as usize))
 }
 
 /// Parse a single VGM command beginning at `off` within `bytes`.
@@ -279,16 +357,23 @@ pub(crate) fn parse_vgm_command(
         }
         other => {
             // Try to parse as a chip write (primary or secondary instance).
-            for &instance in &[ChipId::Primary, ChipId::Secondary] {
-                let base = match instance {
-                    ChipId::Primary => other,
-                    ChipId::Secondary => other.wrapping_sub(0x50),
+            for &instance in &[Instance::Primary, Instance::Secondary] {
+                let opcode = match instance {
+                    Instance::Primary => other,
+                    Instance::Secondary => other.wrapping_sub(0x50),
                 };
-                match parse_chip_write(base, instance, bytes, cur) {
+                match parse_chip_write(opcode, instance, bytes, cur) {
                     Ok((cmd, cons)) => return Ok((cmd, 1 + cons)),
                     Err(ParseError::Other(_)) => continue,
                     Err(e) => return Err(e),
                 }
+            }
+
+            // If no chip write matched, try reserved opcode ranges as a fallback.
+            match parse_reserved_write(other, bytes, cur) {
+                Ok((cmd, cons)) => return Ok((cmd, 1 + cons)),
+                Err(ParseError::Other(_)) => {}
+                Err(e) => return Err(e),
             }
 
             Err(ParseError::Other(format!("unknown opcode {:#X}", other)))
@@ -314,7 +399,7 @@ pub(crate) fn parse_vgm_command(
 /// resulting spec into the matching `VgmCommand` variant.
 pub(crate) fn parse_chip_write(
     opcode: u8,
-    instance: ChipId,
+    instance: Instance,
     bytes: &[u8],
     offset: usize,
 ) -> Result<(VgmCommand, usize), ParseError> {
@@ -477,6 +562,51 @@ pub(crate) fn parse_chip_write(
         }
         _ => Err(ParseError::Other(format!(
             "unknown chip base opcode {:#X}",
+            opcode
+        ))),
+    }
+}
+
+/// Parse reserved (non-chip) VGM write opcodes.
+///
+/// This mirrors the structure of `parse_chip_write` but handles the
+/// reserved opcode ranges that map to `ReservedU8`, `ReservedU16`,
+/// `ReservedU24`, and `ReservedU32` command specs. The `opcode`
+/// parameter is the opcode byte as seen in the VGM stream (the parser
+/// expects the caller to have consumed the opcode byte already and
+/// `offset` points at the first payload byte).
+pub(crate) fn parse_reserved_write(
+    opcode: u8,
+    bytes: &[u8],
+    offset: usize,
+) -> Result<(VgmCommand, usize), ParseError> {
+    match opcode {
+        // ReservedU8: 0x30..=0x3F
+        0x30..=0x3F => {
+            let (spec, n) = ReservedU8::parse(bytes, offset, opcode)?;
+            Ok((VgmCommand::ReservedU8Write(spec), n))
+        }
+
+        // ReservedU16: 0x41..=0x4E
+        0x41..=0x4E => {
+            let (spec, n) = ReservedU16::parse(bytes, offset, opcode)?;
+            Ok((VgmCommand::ReservedU16Write(spec), n))
+        }
+
+        // ReservedU24: 0xC9..=0xCF and 0xD7..=0xDF
+        0xC9..=0xCF | 0xD7..=0xDF => {
+            let (spec, n) = ReservedU24::parse(bytes, offset, opcode)?;
+            Ok((VgmCommand::ReservedU24Write(spec), n))
+        }
+
+        // ReservedU32: 0xE2..=0xFF
+        0xE2..=0xFF => {
+            let (spec, n) = ReservedU32::parse(bytes, offset, opcode)?;
+            Ok((VgmCommand::ReservedU32Write(spec), n))
+        }
+
+        _ => Err(ParseError::Other(format!(
+            "unknown reserved opcode {:#X}",
             opcode
         ))),
     }
