@@ -1,13 +1,16 @@
-use crate::fnumber::{
-    Chip, ChipSpec, FNumber, FNumberError, YM2203Spec, YMF262SpecOpl3, find_and_tune_fnumber,
-    generate_12edo_fnum_table,
-};
 use crate::pcm::{Peak, analyze_pcm_peaks, synthesize_sines};
-use crate::vgm::VgmBuilder;
 use crate::ym::{
     init_ym2203, init_ym2203_channel_and_op, init_ymf262, init_ymf262_channel_and_op, ym2203_keyon,
     ymf262_keyon,
 };
+use soundlog::chip::Chip;
+use soundlog::chip::fnumber::FNumberEntry;
+use soundlog::chip::fnumber::{
+    ChipTypeSpec, FNumber, FNumberError, Opl3Spec, OpnSpec, find_and_tune_fnumber,
+    generate_12edo_fnum_table,
+};
+use soundlog::{EndOfData, Instance, WaitSamples};
+use soundlog::{VgmBuilder, VgmDocument};
 
 /// Extracted spectral feature representing a chip `FNumber` and the detected magnitude.
 ///
@@ -31,11 +34,11 @@ pub struct SpectralFeature {
 ///
 /// Returns a vector of `SpectralFeature` containing tuned `FNumber`s and their magnitudes,
 /// or `FNumberError` if table lookup/tuning fails.
-pub fn map_samples_to_fnums<C: crate::fnumber::ChipSpec>(
+pub fn map_samples_to_fnums<C: soundlog::chip::fnumber::ChipTypeSpec>(
     samples: &[f32],
     sample_rate: usize,
     max_voices: usize,
-    table: &[[Option<crate::fnumber::FNumberEntry>; 12]; 8],
+    table: &[[Option<FNumberEntry>; 12]; 8],
 ) -> Result<Vec<SpectralFeature>, FNumberError> {
     let peaks = analyze_pcm_peaks(samples, sample_rate, max_voices);
 
@@ -75,8 +78,8 @@ fn assign_peaks_to_chip_instances(
     peaks: &[Peak],
     _input_sample_rate: usize,
     chip_instances: &[(Chip, usize)],
-    fnum_table_ymf262opl3: &[[Option<crate::fnumber::FNumberEntry>; 12]; 8],
-    fnum_table_ym2203: &[[Option<crate::fnumber::FNumberEntry>; 12]; 8],
+    fnum_table_ymf262opl3: &[[Option<FNumberEntry>; 12]; 8],
+    fnum_table_ym2203: &[[Option<FNumberEntry>; 12]; 8],
 ) -> Result<Vec<Vec<SpectralFeature>>, FNumberError> {
     let total_instances = chip_instances.len();
     let mut remaining: Vec<usize> = chip_instances.iter().map(|(_, v)| *v).collect();
@@ -89,11 +92,11 @@ fn assign_peaks_to_chip_instances(
                 continue;
             }
             match chip {
-                Chip::YMF262Opl3 => {
-                    if let Ok(fnum) = find_and_tune_fnumber::<YMF262SpecOpl3>(
+                Chip::Ymf262 => {
+                    if let Ok(fnum) = find_and_tune_fnumber::<Opl3Spec>(
                         fnum_table_ymf262opl3,
                         peak.freq_hz,
-                        YMF262SpecOpl3::default_master_clock(),
+                        Opl3Spec::default_master_clock(),
                     ) {
                         let feat = SpectralFeature {
                             fnumber: fnum,
@@ -105,11 +108,11 @@ fn assign_peaks_to_chip_instances(
                         }
                     }
                 }
-                Chip::YM2203 => {
-                    if let Ok(fnum) = find_and_tune_fnumber::<YM2203Spec>(
+                Chip::Ym2203 => {
+                    if let Ok(fnum) = find_and_tune_fnumber::<OpnSpec>(
                         fnum_table_ym2203,
                         peak.freq_hz,
-                        YM2203Spec::default_master_clock(),
+                        OpnSpec::default_master_clock(),
                     ) {
                         let feat = SpectralFeature {
                             fnumber: fnum,
@@ -121,6 +124,7 @@ fn assign_peaks_to_chip_instances(
                         }
                     }
                 }
+                _ => {}
             }
         }
 
@@ -211,11 +215,10 @@ pub fn process_samples_resynth_multi(
     }
 
     let fnum_table_ymf262opl3 =
-        generate_12edo_fnum_table::<YMF262SpecOpl3>(YMF262SpecOpl3::default_master_clock())
+        generate_12edo_fnum_table::<Opl3Spec>(Opl3Spec::default_master_clock())
             .map_err(|e| format!("table gen 262 error: {:?}", e))?;
-    let fnum_table_ym2203 =
-        generate_12edo_fnum_table::<YM2203Spec>(YM2203Spec::default_master_clock())
-            .map_err(|e| format!("table gen 2203 error: {:?}", e))?;
+    let fnum_table_ym2203 = generate_12edo_fnum_table::<OpnSpec>(OpnSpec::default_master_clock())
+        .map_err(|e| format!("table gen 2203 error: {:?}", e))?;
 
     let total_samples = samples.len();
     let mut out: Vec<f32> = Vec::with_capacity(total_samples);
@@ -295,7 +298,7 @@ pub fn process_samples_resynth_multi_to_vgm(
     window_size: usize,
     max_tl: u8,
     chip_instances: &[(Chip, usize)],
-) -> Result<crate::vgm::VgmDocument, String> {
+) -> Result<VgmDocument, String> {
     if window_size == 0 {
         return Err("window_size must be > 0".to_string());
     }
@@ -303,35 +306,35 @@ pub fn process_samples_resynth_multi_to_vgm(
     let output_sample_rate = 44100;
 
     let fnum_table_ymf262opl3 =
-        generate_12edo_fnum_table::<YMF262SpecOpl3>(YMF262SpecOpl3::default_master_clock())
+        generate_12edo_fnum_table::<Opl3Spec>(Opl3Spec::default_master_clock())
             .map_err(|e| format!("table gen 262 error: {:?}", e))?;
-    let fnum_table_ym2203 =
-        generate_12edo_fnum_table::<YM2203Spec>(YM2203Spec::default_master_clock())
-            .map_err(|e| format!("table gen 2203 error: {:?}", e))?;
+    let fnum_table_ym2203 = generate_12edo_fnum_table::<OpnSpec>(OpnSpec::default_master_clock())
+        .map_err(|e| format!("table gen 2203 error: {:?}", e))?;
 
     let total_samples = samples.len();
     let mut builder = VgmBuilder::new();
-    builder.set_sample_rate(output_sample_rate as u32);
 
     let mut seen_ymf262 = false;
     let mut seen_ym2203 = false;
     let ym2203_instances = chip_instances
         .iter()
-        .filter(|(c, _)| matches!(c, Chip::YM2203))
+        .filter(|(c, _)| matches!(c, Chip::Ym2203))
         .count();
     for (chip, _voices) in chip_instances.iter() {
         match chip {
-            Chip::YMF262Opl3 if !seen_ymf262 => {
-                builder.add_chip_clock(
-                    crate::vgm::VgmChip::Ymf262,
-                    YMF262SpecOpl3::default_master_clock() as u32,
+            Chip::Ymf262 if !seen_ymf262 => {
+                builder.register_chip(
+                    Chip::Ymf262,
+                    Instance::Primary,
+                    Opl3Spec::default_master_clock() as u32,
                 );
                 seen_ymf262 = true;
             }
-            Chip::YM2203 if !seen_ym2203 => {
-                builder.add_chip_clock(
-                    crate::vgm::VgmChip::Ym2203,
-                    YM2203Spec::default_master_clock() as u32,
+            Chip::Ym2203 if !seen_ym2203 => {
+                builder.register_chip(
+                    Chip::Ym2203,
+                    Instance::Primary,
+                    OpnSpec::default_master_clock() as u32,
                 );
                 seen_ym2203 = true;
             }
@@ -340,15 +343,19 @@ pub fn process_samples_resynth_multi_to_vgm(
     }
 
     if ym2203_instances >= 2 {
-        builder.enable_dual_chip(crate::vgm::VgmChip::Ym2203);
+        builder.register_chip(
+            Chip::Ym2203,
+            Instance::Secondary,
+            OpnSpec::default_master_clock() as u32,
+        );
     }
 
     if seen_ymf262 {
         init_ymf262(&mut builder);
-        let base_262 = find_and_tune_fnumber::<YMF262SpecOpl3>(
+        let base_262 = find_and_tune_fnumber::<Opl3Spec>(
             &fnum_table_ymf262opl3,
             440.0,
-            YMF262SpecOpl3::default_master_clock(),
+            Opl3Spec::default_master_clock(),
         )
         .map_err(|e| format!("fnum tune error 262: {:?}", e))?;
         for ch in 0u8..18u8 {
@@ -368,10 +375,10 @@ pub fn process_samples_resynth_multi_to_vgm(
         } else {
             1usize
         };
-        let base_2203 = find_and_tune_fnumber::<YM2203Spec>(
+        let base_2203 = find_and_tune_fnumber::<OpnSpec>(
             &fnum_table_ym2203,
             440.0,
-            YM2203Spec::default_master_clock(),
+            OpnSpec::default_master_clock(),
         )
         .map_err(|e| format!("fnum tune error 2203: {:?}", e))?;
         for port in 0..chip_count {
@@ -415,7 +422,7 @@ pub fn process_samples_resynth_multi_to_vgm(
             }
 
             match chip {
-                Chip::YMF262Opl3 => {
+                Chip::Ymf262 => {
                     let max_ch = 18usize;
                     for (i, feat) in feats.iter().enumerate() {
                         let ch_idx = (i % max_ch) as u8;
@@ -426,10 +433,10 @@ pub fn process_samples_resynth_multi_to_vgm(
                         ymf262_keyon(&mut builder, ch_idx, fnum_val, block_val, tl);
                     }
                 }
-                Chip::YM2203 => {
+                Chip::Ym2203 => {
                     let port_num = chip_instances[..=idx]
                         .iter()
-                        .filter(|(c, _)| matches!(c, Chip::YM2203))
+                        .filter(|(c, _)| matches!(c, Chip::Ym2203))
                         .count()
                         - 1;
                     for (i, feat) in feats.iter().enumerate() {
@@ -441,6 +448,7 @@ pub fn process_samples_resynth_multi_to_vgm(
                         ym2203_keyon(&mut builder, port_num as u8, ch, fnum_val, block_val, tl);
                     }
                 }
+                _ => {}
             }
         }
 
@@ -451,11 +459,11 @@ pub fn process_samples_resynth_multi_to_vgm(
         if output_count == 0 {
             output_count = 1;
         }
-        builder.wait_samples(output_count as u32);
+        builder.add_vgm_command(WaitSamples(output_count as u16));
 
         offset += window_size;
     }
 
-    builder.end();
-    Ok(builder.build())
+    builder.add_vgm_command(EndOfData);
+    Ok(builder.finalize())
 }

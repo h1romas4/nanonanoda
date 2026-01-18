@@ -1,4 +1,6 @@
-use crate::vgm::VgmBuilder;
+use soundlog::Instance;
+use soundlog::VgmBuilder;
+use soundlog::chip::{Ym2203Spec, Ymf262Spec};
 
 #[rustfmt::skip]
 pub const OPL3_OPS_BY_CH: [(u8, u8); 18] = [
@@ -21,14 +23,28 @@ pub fn init_ym2203(b: &mut VgmBuilder, port: u8) {
 
 pub fn init_ymf262(b: &mut VgmBuilder) {
     // enable OPL3 mode
-    b.ymf262_write(1, 0x05, 0x01);
+    b.add_chip_write(
+        Instance::Primary,
+        Ymf262Spec {
+            port: 1,
+            register: 0x05,
+            value: 0x01,
+        },
+    );
     // op2
-    b.ymf262_write(1, 0x04, 0x00);
+    b.add_chip_write(
+        Instance::Primary,
+        Ymf262Spec {
+            port: 1,
+            register: 0x04,
+            value: 0x00,
+        },
+    );
 }
 
 pub fn init_ym2203_channel_and_op(
     b: &mut VgmBuilder,
-    port: u8,
+    instance: u8,
     ch: u8,
     fnum_val: u16,
     block_val: u8,
@@ -41,15 +57,33 @@ pub fn init_ym2203_channel_and_op(
     let sr: u8 = 0;
     let sl_rr: u8 = 0;
     let alg_fb: u8 = 0x07;
+    let instance: Instance = (instance as usize).into();
 
     // write f-number low/high before operator setup
     let low = (fnum_val & 0xFF) as u8;
     let high = (((fnum_val >> 8) & 0x07) as u8) | ((block_val & 0x07) << 3);
     let use_op = 0u8; // OP1
-    b.ym2203_write(port, 0xA0 + ch, low);
-    b.ym2203_write(port, 0xA4 + ch, high);
-
-    b.ym2203_write(port, 0xB0 + ch, alg_fb);
+    b.add_chip_write(
+        instance,
+        Ym2203Spec {
+            register: 0xA0 + ch,
+            value: low,
+        },
+    );
+    b.add_chip_write(
+        instance,
+        Ym2203Spec {
+            register: 0xA4 + ch,
+            value: high,
+        },
+    );
+    b.add_chip_write(
+        instance,
+        Ym2203Spec {
+            register: 0xB0 + ch,
+            value: alg_fb,
+        },
+    );
 
     for op in 0u8..4u8 {
         let dt_ml_reg = 0x30 + op * 4 + ch;
@@ -59,18 +93,66 @@ pub fn init_ym2203_channel_and_op(
         let sr_reg = 0x70 + op * 4 + ch;
         let sl_rr_reg = 0x80 + op * 4 + ch;
 
-        b.ym2203_write(port, dt_ml_reg, dt_ml);
+        b.add_chip_write(
+            instance,
+            Ym2203Spec {
+                register: dt_ml_reg,
+                value: dt_ml,
+            },
+        );
         let tl_val = if op == use_op { tl } else { 0x3F };
-        b.ym2203_write(port, tl_reg, tl_val);
-        b.ym2203_write(port, ksl_ar_reg, ksl_ar);
-        b.ym2203_write(port, dr_reg, dr);
-        b.ym2203_write(port, sr_reg, sr);
-        b.ym2203_write(port, sl_rr_reg, sl_rr);
+        b.add_chip_write(
+            instance,
+            Ym2203Spec {
+                register: tl_reg,
+                value: tl_val,
+            },
+        );
+        b.add_chip_write(
+            instance,
+            Ym2203Spec {
+                register: ksl_ar_reg,
+                value: ksl_ar,
+            },
+        );
+        b.add_chip_write(
+            instance,
+            Ym2203Spec {
+                register: dr_reg,
+                value: dr,
+            },
+        );
+        b.add_chip_write(
+            instance,
+            Ym2203Spec {
+                register: sr_reg,
+                value: sr,
+            },
+        );
+        b.add_chip_write(
+            instance,
+            Ym2203Spec {
+                register: sl_rr_reg,
+                value: sl_rr,
+            },
+        );
     }
 
     // rewrite frequency after operator setup
-    b.ym2203_write(port, 0xA0 + ch, low);
-    b.ym2203_write(port, 0xA4 + ch, high);
+    b.add_chip_write(
+        instance,
+        Ym2203Spec {
+            register: 0xA0 + ch,
+            value: low,
+        },
+    );
+    b.add_chip_write(
+        instance,
+        Ym2203Spec {
+            register: 0xA4 + ch,
+            value: high,
+        },
+    );
 }
 
 pub fn init_ymf262_channel_and_op(
@@ -93,8 +175,22 @@ pub fn init_ymf262_channel_and_op(
     let freq_idx = ch % 9;
 
     // write f-number low/high before operator setup
-    b.ymf262_write(freq_port, 0xA0 + freq_idx, low);
-    b.ymf262_write(freq_port, 0xB0 + freq_idx, high);
+    b.add_chip_write(
+        Instance::Primary,
+        Ymf262Spec {
+            port: freq_port,
+            register: 0xA0 + freq_idx,
+            value: low,
+        },
+    );
+    b.add_chip_write(
+        Instance::Primary,
+        Ymf262Spec {
+            port: freq_port,
+            register: 0xB0 + freq_idx,
+            value: high,
+        },
+    );
 
     let (op_mod, op_car) = if (ch as usize) < OPL3_OPS_BY_CH.len() {
         OPL3_OPS_BY_CH[ch as usize]
@@ -106,19 +202,76 @@ pub fn init_ymf262_channel_and_op(
         let (port, off) = OPL3_OP_MAP[op as usize];
         // use provided modulator TL for modulator, carrier TL remains 0
         let tl_val = if op == op_mod { 0x3F } else { tl };
-        b.ymf262_write(port, 0x20 + off, dt_ml);
-        b.ymf262_write(port, 0x40 + off, tl_val);
-        b.ymf262_write(port, 0x60 + off, ar_dr);
-        b.ymf262_write(port, 0x80 + off, sr_rr);
-        b.ymf262_write(port, 0xE0 + off, waveform);
+        b.add_chip_write(
+            Instance::Primary,
+            Ymf262Spec {
+                port,
+                register: 0x20 + off,
+                value: dt_ml,
+            },
+        );
+        b.add_chip_write(
+            Instance::Primary,
+            Ymf262Spec {
+                port,
+                register: 0x40 + off,
+                value: tl_val,
+            },
+        );
+        b.add_chip_write(
+            Instance::Primary,
+            Ymf262Spec {
+                port,
+                register: 0x60 + off,
+                value: ar_dr,
+            },
+        );
+        b.add_chip_write(
+            Instance::Primary,
+            Ymf262Spec {
+                port,
+                register: 0x80 + off,
+                value: sr_rr,
+            },
+        );
+        b.add_chip_write(
+            Instance::Primary,
+            Ymf262Spec {
+                port,
+                register: 0xE0 + off,
+                value: waveform,
+            },
+        );
     }
 
     // rewrite frequency after operator setup
-    b.ymf262_write(freq_port, 0xA0 + freq_idx, low);
-    b.ymf262_write(freq_port, 0xB0 + freq_idx, high);
+    b.add_chip_write(
+        Instance::Primary,
+        Ymf262Spec {
+            port: freq_port,
+            register: 0xA0 + freq_idx,
+            value: low,
+        },
+    );
+    b.add_chip_write(
+        Instance::Primary,
+        Ymf262Spec {
+            port: freq_port,
+            register: 0xB0 + freq_idx,
+            value: high,
+        },
+    );
 }
 
-pub fn ym2203_keyon(b: &mut VgmBuilder, port: u8, ch: u8, fnum_val: u16, block_val: u8, tl: u8) {
+pub fn ym2203_keyon(
+    b: &mut VgmBuilder,
+    instance: u8,
+    ch: u8,
+    fnum_val: u16,
+    block_val: u8,
+    tl: u8,
+) {
+    let instance: Instance = (instance as usize).into();
     let low = (fnum_val & 0xFF) as u8;
     let high = (((fnum_val >> 8) & 0x07) as u8) | ((block_val & 0x07) << 3);
 
@@ -126,19 +279,43 @@ pub fn ym2203_keyon(b: &mut VgmBuilder, port: u8, ch: u8, fnum_val: u16, block_v
     for op in 0u8..4u8 {
         let tl_reg = 0x40 + op * 4 + ch;
         let tl_val = if op == use_op { tl } else { 0x3F };
-        b.ym2203_write(port, tl_reg, tl_val);
+        b.add_chip_write(
+            instance,
+            Ym2203Spec {
+                register: tl_reg,
+                value: tl_val,
+            },
+        );
     }
     // set frequency
-    b.ym2203_write(port, 0xA0 + ch, low);
-    b.ym2203_write(port, 0xA4 + ch, high);
+    b.add_chip_write(
+        instance,
+        Ym2203Spec {
+            register: 0xA0 + ch,
+            value: low,
+        },
+    );
+    b.add_chip_write(
+        instance,
+        Ym2203Spec {
+            register: 0xA4 + ch,
+            value: high,
+        },
+    );
     // key-on
-    b.ym2203_write(port, 0x28, 0xF0 | (ch & 0x0F));
+    b.add_chip_write(
+        instance,
+        Ym2203Spec {
+            register: 0x28,
+            value: 0xF0 | (ch & 0x0F),
+        },
+    );
 }
 
 pub fn ymf262_keyon(b: &mut VgmBuilder, ch: u8, fnum_val: u16, block_val: u8, tl: u8) {
     let low = (fnum_val & 0xFF) as u8;
     let high = (((fnum_val >> 8) & 0x03) as u8) | ((block_val & 0x07) << 2);
-    let bank = if ch >= 9 { 1 } else { 0 };
+    let port: u8 = if ch >= 9 { 1 } else { 0 };
     let reg_ch = ch % 9;
 
     let (op_mod, op_car) = if (ch as usize) < OPL3_OPS_BY_CH.len() {
@@ -149,10 +326,31 @@ pub fn ymf262_keyon(b: &mut VgmBuilder, ch: u8, fnum_val: u16, block_val: u8, tl
     for &op in &[op_mod, op_car] {
         let (port, off) = OPL3_OP_MAP[op as usize];
         let tl_val = if op == op_mod { 0x3F } else { tl };
-        b.ymf262_write(port, 0x40 + off, tl_val);
+        b.add_chip_write(
+            Instance::Primary,
+            Ymf262Spec {
+                port,
+                register: 0x40 + off,
+                value: tl_val,
+            },
+        );
     }
     // set frequency
-    b.ymf262_write(bank, 0xA0 + reg_ch, low);
+    b.add_chip_write(
+        Instance::Primary,
+        Ymf262Spec {
+            port,
+            register: 0xA0 + reg_ch,
+            value: low,
+        },
+    );
     // key-on
-    b.ymf262_write(bank, 0xB0 + reg_ch, high | 0x20);
+    b.add_chip_write(
+        Instance::Primary,
+        Ymf262Spec {
+            port,
+            register: 0xB0 + reg_ch,
+            value: high | 0x20,
+        },
+    );
 }

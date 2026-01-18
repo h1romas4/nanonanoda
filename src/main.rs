@@ -2,7 +2,9 @@ use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
 use clap::{Parser, ValueEnum};
-use nanonanoda::{Chip, interleaved_to_mono};
+use nanonanoda::interleaved_to_mono;
+use soundlog::chip::Chip;
+use soundlog::meta::Gd3;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -56,8 +58,8 @@ impl FromStr for ChipSpecArg {
         }
         let name = parts[0].to_lowercase();
         let chip = match name.as_str() {
-            "ymf262" => Chip::YMF262Opl3,
-            "ym2203" => Chip::YM2203,
+            "ymf262" => Chip::Ymf262,
+            "ym2203" => Chip::Ym2203,
             other => return Err(format!("unknown chip '{}'.", other)),
         };
         let count = if parts.len() >= 2 {
@@ -205,7 +207,8 @@ fn generate_vgm_file(
         .file_stem()
         .and_then(|s| s.to_str())
         .map(|s| s.to_string());
-    let gd3 = nanonanoda::vgm::Gd3 {
+    let gd3 = Gd3 {
+        version: 1,
         track_name_en: track_name,
         track_name_jp: None,
         game_name_en: None,
@@ -232,7 +235,7 @@ fn generate_vgm_file(
         ))
     };
 
-    let bytes = vgm.to_bytes();
+    let bytes: Vec<u8> = vgm.into();
     std::fs::write(&out_path, &bytes)?;
     println!("Wrote VGM to {:?}", out_path);
 
@@ -245,13 +248,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut chip_instances: Vec<(Chip, usize)> = Vec::new();
     if args.chip.is_empty() {
         // default: one ymf262 18 voices, two ym2203 3 voices
-        chip_instances.push((Chip::YMF262Opl3, 18));
-        chip_instances.push((Chip::YM2203, 3));
-        chip_instances.push((Chip::YM2203, 3));
+        chip_instances.push((Chip::Ymf262, 18));
+        chip_instances.push((Chip::Ym2203, 3));
+        chip_instances.push((Chip::Ym2203, 3));
     } else {
         for spec in args.chip.into_iter() {
             for _ in 0..spec.count {
-                chip_instances.push((spec.chip, spec.voices));
+                chip_instances.push((spec.chip.clone(), spec.voices));
             }
         }
     }

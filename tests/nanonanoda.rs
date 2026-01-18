@@ -1,9 +1,8 @@
 use ::nanonanoda::nanonanoda::{mag_to_tl, map_samples_to_fnums, synth_from_spectral_features};
 use ::nanonanoda::pcm::{Peak, analyze_pcm_peaks, synthesize_sines};
-use ::nanonanoda::{
-    Chip, ChipSpec, YM2203Spec, YMF262SpecOpl3, generate_12edo_fnum_table,
-    process_samples_resynth_multi,
-};
+use ::nanonanoda::process_samples_resynth_multi;
+use soundlog::chip::Chip;
+use soundlog::chip::fnumber::{ChipTypeSpec, Opl3Spec, OpnSpec, generate_12edo_fnum_table};
 
 fn generate_test_sine(freq: f64, sample_rate: usize, sample_count: usize, mag: f64) -> Vec<f32> {
     let peak = Peak {
@@ -24,7 +23,8 @@ fn test_process_samples_resynth_multi_44100() {
     let sample_rate = 44100usize;
     let samples = vec![0.0f32; 44100];
     let window_size = 1024usize;
-    let chip_instances = vec![(Chip::YMF262Opl3, 6usize)];
+    // use soundlog chip enum variants
+    let chip_instances = vec![(Chip::Ymf262, 6usize)];
 
     let out = process_samples_resynth_multi(
         &samples,
@@ -47,17 +47,14 @@ fn test_map_samples_to_fnums_single_tone() {
 
     let buf = generate_test_sine(freq, sample_rate, window, 1.0);
 
-    let fnum_table_ymf262 =
-        generate_12edo_fnum_table::<YMF262SpecOpl3>(YMF262SpecOpl3::default_master_clock())
-            .expect("table gen 262");
-    let fnum_table_ym2203 =
-        generate_12edo_fnum_table::<YM2203Spec>(YM2203Spec::default_master_clock())
-            .expect("table gen 2203");
+    let fnum_table_ymf262 = generate_12edo_fnum_table::<Opl3Spec>(Opl3Spec::default_master_clock())
+        .expect("table gen 262");
+    let fnum_table_ym2203 = generate_12edo_fnum_table::<OpnSpec>(OpnSpec::default_master_clock())
+        .expect("table gen 2203");
 
     // YMF262
-    let features_262 =
-        map_samples_to_fnums::<YMF262SpecOpl3>(&buf, sample_rate, 4, &fnum_table_ymf262)
-            .expect("mapping failed 262");
+    let features_262 = map_samples_to_fnums::<Opl3Spec>(&buf, sample_rate, 4, &fnum_table_ymf262)
+        .expect("mapping failed 262");
     assert!(!features_262.is_empty(), "no features returned for 262");
     let f = &features_262[0];
     assert!(f.magnitude > 0.0, "magnitude is zero or negative");
@@ -70,9 +67,8 @@ fn test_map_samples_to_fnums_single_tone() {
     );
 
     // YM2203
-    let features_2203 =
-        map_samples_to_fnums::<YM2203Spec>(&buf, sample_rate, 4, &fnum_table_ym2203)
-            .expect("mapping failed 2203");
+    let features_2203 = map_samples_to_fnums::<OpnSpec>(&buf, sample_rate, 4, &fnum_table_ym2203)
+        .expect("mapping failed 2203");
     assert!(!features_2203.is_empty(), "no features returned for 2203");
 }
 
@@ -84,15 +80,13 @@ fn test_synth_from_spectral_features_roundtrip() {
 
     let src = generate_test_sine(freq, sample_rate, window, 1.0);
 
-    let fnum_table_ymf262 =
-        generate_12edo_fnum_table::<YMF262SpecOpl3>(YMF262SpecOpl3::default_master_clock())
-            .expect("table gen 262");
-    let fnum_table_ym2203 =
-        generate_12edo_fnum_table::<YM2203Spec>(YM2203Spec::default_master_clock())
-            .expect("table gen 2203");
+    let fnum_table_ymf262 = generate_12edo_fnum_table::<Opl3Spec>(Opl3Spec::default_master_clock())
+        .expect("table gen 262");
+    let fnum_table_ym2203 = generate_12edo_fnum_table::<OpnSpec>(OpnSpec::default_master_clock())
+        .expect("table gen 2203");
 
     // YMF262 roundtrip
-    let features = map_samples_to_fnums::<YMF262SpecOpl3>(&src, sample_rate, 4, &fnum_table_ymf262)
+    let features = map_samples_to_fnums::<Opl3Spec>(&src, sample_rate, 4, &fnum_table_ymf262)
         .expect("mapping failed 262");
     assert!(!features.is_empty());
     let synth = synth_from_spectral_features(&features, sample_rate, window).expect("synth failed");
@@ -110,7 +104,7 @@ fn test_synth_from_spectral_features_roundtrip() {
     );
 
     // YM2203 roundtrip
-    let features = map_samples_to_fnums::<YM2203Spec>(&src, sample_rate, 4, &fnum_table_ym2203)
+    let features = map_samples_to_fnums::<OpnSpec>(&src, sample_rate, 4, &fnum_table_ym2203)
         .expect("mapping failed 2203");
     assert!(!features.is_empty());
     let synth = synth_from_spectral_features(&features, sample_rate, window).expect("synth failed");
@@ -155,15 +149,13 @@ fn test_multi_tone_varied_magnitudes() {
 
     let src = synthesize_sines(&peaks, sample_rate, window);
 
-    let fnum_table_ymf262 =
-        generate_12edo_fnum_table::<YMF262SpecOpl3>(YMF262SpecOpl3::default_master_clock())
-            .expect("table gen 262");
-    let fnum_table_ym2203 =
-        generate_12edo_fnum_table::<YM2203Spec>(YM2203Spec::default_master_clock())
-            .expect("table gen 2203");
+    let fnum_table_ymf262 = generate_12edo_fnum_table::<Opl3Spec>(Opl3Spec::default_master_clock())
+        .expect("table gen 262");
+    let fnum_table_ym2203 = generate_12edo_fnum_table::<OpnSpec>(OpnSpec::default_master_clock())
+        .expect("table gen 2203");
 
     // YMF262
-    let features = map_samples_to_fnums::<YMF262SpecOpl3>(&src, sample_rate, 6, &fnum_table_ymf262)
+    let features = map_samples_to_fnums::<Opl3Spec>(&src, sample_rate, 6, &fnum_table_ymf262)
         .expect("mapping failed 262");
     assert!(
         features.len() >= 3,
@@ -185,7 +177,7 @@ fn test_multi_tone_varied_magnitudes() {
     }
 
     // YM2203
-    let features = map_samples_to_fnums::<YM2203Spec>(&src, sample_rate, 6, &fnum_table_ym2203)
+    let features = map_samples_to_fnums::<OpnSpec>(&src, sample_rate, 6, &fnum_table_ym2203)
         .expect("mapping failed 2203");
     assert!(
         features.len() >= 3,
