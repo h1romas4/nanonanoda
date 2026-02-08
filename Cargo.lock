@@ -208,9 +208,9 @@ dependencies = [
 
 [[package]]
 name = "soundlog"
-version = "0.1.0"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "60d58b033db76994cc4731831d011738bb065f1cda6c159f1aa5e6c53e0105d0"
+checksum = "0ab875f8f0fa3ff932567cc3e57341c64c506ceb573647506dcaf989f9c59539"
 
 [[package]]
 name = "strength_reduce"
