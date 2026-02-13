@@ -124,7 +124,7 @@ checksum = "a6cb138bb79a146c1bd460005623e142ef0181e3d0219cb493e02f7d08a35695"
 
 [[package]]
 name = "nanonanoda"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "clap",
  "hound",
@@ -208,9 +208,9 @@ dependencies = [
 
 [[package]]
 name = "soundlog"
-version = "0.2.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0ab875f8f0fa3ff932567cc3e57341c64c506ceb573647506dcaf989f9c59539"
+checksum = "9a513e905f07bc74d7870ba7ee743665faa2ea2823d7705b12aca444b326d67b"
 
 [[package]]
 name = "strength_reduce"
