@@ -5,11 +5,11 @@ use std::f32::consts::PI;
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Peak {
     /// Frequency in Hz
-    pub freq_hz: f64,
+    pub freq_hz: f32,
     /// Linear magnitude (sqrt(re^2+im^2))
-    pub magnitude: f64,
+    pub magnitude: f32,
     /// Magnitude in dB (20*log10), approximate; -inf mapped to -200.0
-    pub magnitude_db: f64,
+    pub magnitude_db: f32,
     /// FFT bin index
     pub bin: usize,
 }
@@ -40,13 +40,13 @@ pub fn analyze_pcm_peaks(samples: &[f32], sample_rate: usize, max_peaks: usize) 
     fft.process(&mut buffer);
 
     let half = fft_size / 2;
-    let mut mags: Vec<f64> = Vec::with_capacity(half);
+    let mut mags: Vec<f32> = Vec::with_capacity(half);
     for comp in buffer.iter().take(half) {
-        let mag = ((comp.re as f64).powi(2) + (comp.im as f64).powi(2)).sqrt();
+        let mag = (comp.re.powi(2) + comp.im.powi(2)).sqrt();
         mags.push(mag);
     }
 
-    let mut candidates: Vec<(usize, f64)> = Vec::new();
+    let mut candidates: Vec<(usize, f32)> = Vec::new();
     for bin_idx in 1..(mags.len() - 1) {
         let mag = mags[bin_idx];
         if mag > mags[bin_idx - 1] && mag > mags[bin_idx + 1] {
@@ -59,7 +59,7 @@ pub fn analyze_pcm_peaks(samples: &[f32], sample_rate: usize, max_peaks: usize) 
 
     let mut peaks: Vec<Peak> = Vec::with_capacity(take_n);
     for &(bin, mag) in candidates.iter().take(take_n) {
-        let freq = (bin as f64) * (sample_rate as f64) / (fft_size as f64);
+        let freq = (bin as f32) * (sample_rate as f32) / (fft_size as f32);
         let mag_db = if mag <= 0.0 {
             -200.0
         } else {
@@ -88,27 +88,27 @@ pub fn synthesize_sines(peaks: &[Peak], sample_rate: usize, sample_count: usize)
         return out;
     }
 
-    let max_mag = peaks.iter().map(|p| p.magnitude).fold(0.0_f64, f64::max);
+    let max_mag = peaks.iter().map(|p| p.magnitude).fold(0.0_f32, f32::max);
     let max_mag = if max_mag.is_finite() && max_mag > 0.0 {
         max_mag
     } else {
         1.0
     };
 
-    let mut comps: Vec<(f64, f64)> = Vec::with_capacity(peaks.len()); // (omega, amp)
+    let mut comps: Vec<(f32, f32)> = Vec::with_capacity(peaks.len()); // (omega, amp)
     for peak in peaks {
-        let omega = 2.0 * std::f64::consts::PI * peak.freq_hz / (sample_rate as f64);
+        let omega = 2.0 * std::f32::consts::PI * peak.freq_hz / (sample_rate as f32);
         let amp = peak.magnitude / max_mag;
         comps.push((omega, amp));
     }
 
     for (sample_idx, slot) in out.iter_mut().enumerate().take(sample_count) {
-        let t = sample_idx as f64;
-        let mut sum: f64 = 0.0;
+        let t = sample_idx as f32;
+        let mut sum: f32 = 0.0;
         for (omega, amp) in &comps {
             sum += amp * (omega * t).sin();
         }
-        *slot = sum as f32;
+        *slot = sum;
     }
 
     let max_abs = out.iter().fold(0.0f32, |m, &v| m.max(v.abs()));

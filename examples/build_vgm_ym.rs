@@ -195,7 +195,7 @@ fn build_ym2203_2chip_3ch_init_and_scale() -> VgmDocument {
     let total_channels = 2 * 3; // two chips x 3 channels
     for i in 0usize..total_channels {
         let semitone = scale[i % scale.len()] + ((i / scale.len()) as i32) * 12;
-        let freq = 261.63 * 2f64.powf((semitone as f64) / 12.0);
+        let freq = 261.63 * 2f32.powf((semitone as f32) / 12.0);
         let fnum = find_and_tune_fnumber::<OpnSpec>(&table, freq, master).unwrap();
         let fnum_val = fnum.f_num as u16;
         let block = fnum.block as u8;
@@ -236,7 +236,7 @@ fn build_opl3_1chip_18ch_init_and_scale() -> VgmDocument {
     let scale: [i32; 8] = [0, 2, 4, 5, 7, 9, 11, 12];
     for i in 0usize..18usize {
         let semitone = scale[i % scale.len()] + ((i / scale.len()) as i32) * 12;
-        let freq = 261.63 * 2f64.powf((semitone as f64) / 12.0);
+        let freq = 261.63 * 2f32.powf((semitone as f32) / 12.0);
         let fnum = find_and_tune_fnumber::<Opl3Spec>(&table, freq, master).unwrap();
         let fnum_val = fnum.f_num as u16;
         let block = fnum.block as u8;

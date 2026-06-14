@@ -4,7 +4,7 @@ use ::nanonanoda::process_samples_resynth_multi;
 use soundlog::chip::Chip;
 use soundlog::chip::fnumber::{ChipTypeSpec, Opl3Spec, OpnSpec, generate_12edo_fnum_table};
 
-fn generate_test_sine(freq: f64, sample_rate: usize, sample_count: usize, mag: f64) -> Vec<f32> {
+fn generate_test_sine(freq: f32, sample_rate: usize, sample_count: usize, mag: f32) -> Vec<f32> {
     let peak = Peak {
         freq_hz: freq,
         magnitude: mag,
@@ -43,7 +43,7 @@ fn test_process_samples_resynth_multi_44100() {
 fn test_map_samples_to_fnums_single_tone() {
     let sample_rate = 48000usize;
     let window = 4096usize;
-    let freq = 1500.0_f64;
+    let freq = 1500.0_f32;
 
     let buf = generate_test_sine(freq, sample_rate, window, 1.0);
 
@@ -76,7 +76,7 @@ fn test_map_samples_to_fnums_single_tone() {
 fn test_synth_from_spectral_features_roundtrip() {
     let sample_rate = 48000usize;
     let window = 4096usize;
-    let freq = 1000.0_f64;
+    let freq = 1000.0_f32;
 
     let src = generate_test_sine(freq, sample_rate, window, 1.0);
 
@@ -94,7 +94,7 @@ fn test_synth_from_spectral_features_roundtrip() {
     let peaks = analyze_pcm_peaks(&synth, sample_rate, 4);
     assert!(!peaks.is_empty(), "no peaks in synthesized buffer");
     let top = &peaks[0];
-    let bin_width = (sample_rate as f64) / (window as f64);
+    let bin_width = (sample_rate as f32) / (window as f32);
     let diff = (top.freq_hz - freq).abs();
     assert!(
         diff <= bin_width * 1.5,
@@ -130,19 +130,19 @@ fn test_multi_tone_varied_magnitudes() {
         Peak {
             freq_hz: 220.0,
             magnitude: 1.0,
-            magnitude_db: 20.0 * 1.0_f64.log10(),
+            magnitude_db: 20.0 * 1.0_f32.log10(),
             bin: 0,
         },
         Peak {
             freq_hz: 440.0,
             magnitude: 0.6,
-            magnitude_db: 20.0 * 0.6_f64.log10(),
+            magnitude_db: 20.0 * 0.6_f32.log10(),
             bin: 0,
         },
         Peak {
             freq_hz: 880.0,
             magnitude: 0.3,
-            magnitude_db: 20.0 * 0.3_f64.log10(),
+            magnitude_db: 20.0 * 0.3_f32.log10(),
             bin: 0,
         },
     ];
@@ -169,8 +169,8 @@ fn test_multi_tone_varied_magnitudes() {
         peaks_out.len() >= 3,
         "expected at least 3 peaks in synthesized output"
     );
-    let bin_width = (sample_rate as f64) / (window as f64);
-    let targets = [220.0_f64, 440.0_f64, 880.0_f64];
+    let bin_width = (sample_rate as f32) / (window as f32);
+    let targets = [220.0_f32, 440.0_f32, 880.0_f32];
     for (i, (&t, detected)) in targets.iter().zip(peaks_out.iter()).enumerate() {
         let diff = (detected.freq_hz - t).abs();
         assert!(diff <= bin_width * 2.0, "peak {} mismatch: {} Hz", i, diff);
@@ -207,14 +207,14 @@ fn test_mag_to_tl_mapping() {
     let max_tl: u8 = 0x24;
 
     assert_eq!(mag_to_tl(0.0, max_tl), 0x3f);
-    assert_eq!(mag_to_tl(f64::NAN, max_tl), 0x3f);
+    assert_eq!(mag_to_tl(f32::NAN, max_tl), 0x3f);
 
     assert_eq!(mag_to_tl(1.0, max_tl), max_tl);
 
-    let mag_neg60 = 10f64.powf(-60.0 / 20.0);
+    let mag_neg60 = 10f32.powf(-60.0 / 20.0);
     assert_eq!(mag_to_tl(mag_neg60, max_tl), 0x3f);
 
-    let mag_neg30 = 10f64.powf(-30.0 / 20.0);
+    let mag_neg30 = 10f32.powf(-30.0 / 20.0);
     let tl_mid = mag_to_tl(mag_neg30, max_tl);
     assert_eq!(tl_mid, 0x32);
 }

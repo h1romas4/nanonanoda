@@ -210,16 +210,8 @@ fn generate_vgm_file(
     let gd3 = Gd3 {
         version: 1,
         track_name_en: track_name,
-        track_name_jp: None,
-        game_name_en: None,
-        game_name_jp: None,
-        system_name_en: None,
-        system_name_jp: None,
-        author_name_en: None,
-        author_name_jp: None,
-        release_date: None,
         creator: Some("nanonanoda".to_string()),
-        notes: None,
+        ..Default::default()
     };
     vgm.gd3 = Some(gd3);
 

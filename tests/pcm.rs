@@ -4,13 +4,13 @@ use nanonanoda::pcm::{Peak, analyze_pcm_peaks, synthesize_sines};
 fn test_analyze_single_tone() {
     let sample_rate: usize = 44100;
     let window: usize = 4096;
-    let freq: f64 = 1000.0;
+    let freq: f32 = 1000.0;
 
-    fn generate_sine(freq_hz: f64, sample_rate: usize, len: usize) -> Vec<f32> {
+    fn generate_sine(freq_hz: f32, sample_rate: usize, len: usize) -> Vec<f32> {
         let mut v = vec![0.0f32; len];
         for (i, val) in v.iter_mut().enumerate() {
-            let t = i as f64 / (sample_rate as f64);
-            *val = (2.0 * std::f64::consts::PI * freq_hz * t).sin() as f32;
+            let t = i as f32 / (sample_rate as f32);
+            *val = (2.0 * std::f32::consts::PI * freq_hz * t).sin();
         }
         v
     }
@@ -20,7 +20,7 @@ fn test_analyze_single_tone() {
 
     assert!(!peaks.is_empty(), "no peaks found");
     let p = peaks[0];
-    let resolution = (sample_rate as f64) / (window as f64);
+    let resolution = (sample_rate as f32) / (window as f32);
     // Accept within one bin width
     assert!(
         (p.freq_hz - freq).abs() <= resolution,
@@ -36,7 +36,7 @@ fn test_analyze_single_tone() {
 fn test_synthesize_and_analyze() {
     let sample_rate: usize = 48000;
     let window: usize = 4096;
-    let target: f64 = 1500.0;
+    let target: f32 = 1500.0;
 
     let peak = Peak {
         freq_hz: target,
@@ -49,7 +49,7 @@ fn test_synthesize_and_analyze() {
     let peaks = analyze_pcm_peaks(&buf, sample_rate, 3);
     assert!(!peaks.is_empty(), "no peaks found in synthesized buffer");
     let p = peaks[0];
-    let resolution = (sample_rate as f64) / (window as f64);
+    let resolution = (sample_rate as f32) / (window as f32);
     assert!(
         (p.freq_hz - target).abs() <= resolution,
         "synth peak {:?} not near {}",
@@ -62,7 +62,7 @@ fn test_synthesize_and_analyze() {
 fn test_synthesize_multi_peaks() {
     let sample_rate: usize = 48000;
     let window: usize = 4096;
-    let targets = [220.0_f64, 440.0, 880.0];
+    let targets = [220.0_f32, 440.0, 880.0];
 
     let peaks: Vec<Peak> = targets
         .iter()
@@ -78,7 +78,7 @@ fn test_synthesize_multi_peaks() {
     let detected = analyze_pcm_peaks(&buf, sample_rate, 16);
     assert!(!detected.is_empty(), "no peaks detected");
 
-    let resolution = (sample_rate as f64) / (window as f64);
+    let resolution = (sample_rate as f32) / (window as f32);
     for &t in &targets {
         let found = detected.iter().any(|p| (p.freq_hz - t).abs() <= resolution);
         assert!(
@@ -94,10 +94,10 @@ fn test_synthesize_multi_peaks() {
 fn test_synthesize_multi_peaks_low_magnitude() {
     let sample_rate: usize = 48000;
     let window: usize = 4096;
-    let targets = [220.0_f64, 440.0, 880.0];
+    let targets = [220.0_f32, 440.0, 880.0];
 
     // Lower magnitudes for secondary peaks
-    let mags = [1.0_f64, 0.3, 0.1];
+    let mags = [1.0_f32, 0.3, 0.1];
 
     let peaks: Vec<Peak> = targets
         .iter()
@@ -114,7 +114,7 @@ fn test_synthesize_multi_peaks_low_magnitude() {
     let detected = analyze_pcm_peaks(&buf, sample_rate, 32);
     assert!(!detected.is_empty(), "no peaks detected");
 
-    let resolution = (sample_rate as f64) / (window as f64);
+    let resolution = (sample_rate as f32) / (window as f32);
     for &t in &targets {
         let found = detected.iter().any(|p| (p.freq_hz - t).abs() <= resolution);
         assert!(
