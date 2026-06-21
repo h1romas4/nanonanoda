@@ -2,7 +2,9 @@ use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
 use clap::{Parser, ValueEnum};
-use nanonanoda::interleaved_to_mono;
+use nanonanoda::{
+    interleaved_to_mono, process_samples_resynth_multi, process_samples_resynth_multi_to_vgm,
+};
 use soundlog::chip::Chip;
 use soundlog::meta::Gd3;
 
@@ -152,7 +154,7 @@ fn generate_wav_file(
         }
     };
 
-    let resynth = nanonanoda::process_samples_resynth_multi(
+    let resynth = process_samples_resynth_multi(
         &buf,
         sample_rate,
         window_size,
@@ -195,7 +197,7 @@ fn generate_vgm_file(
         }
     };
 
-    let mut vgm = nanonanoda::process_samples_resynth_multi_to_vgm(
+    let mut vgm = process_samples_resynth_multi_to_vgm(
         &buf,
         sample_rate,
         window_size,
