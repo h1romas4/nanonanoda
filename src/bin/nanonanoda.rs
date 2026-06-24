@@ -1,8 +1,6 @@
 use clap::{Parser, ValueEnum};
 use nanonanoda::pcm::interleaved_to_mono;
-use nanonanoda::resynth::{
-    process_samples_resynth_multi, process_samples_resynth_multi_to_vgm,
-};
+use nanonanoda::resynth::{process_samples_resynth_multi, process_samples_resynth_multi_to_vgm};
 use soundlog::chip::Chip;
 use soundlog::meta::Gd3;
 use std::path::{Path, PathBuf};

@@ -1,4 +1,4 @@
-use nanonanoda::pcm::{Peak, analyze_pcm_peaks, synthesize_sines};
+use nanonanoda::pcm::{analyze_pcm_peaks, synthesize_sines, Peak};
 
 #[test]
 fn test_analyze_single_tone() {

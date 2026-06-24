@@ -1,9 +1,9 @@
-use nanonanoda::pcm::{Peak, analyze_pcm_peaks, synthesize_sines};
+use nanonanoda::pcm::{analyze_pcm_peaks, synthesize_sines, Peak};
 use nanonanoda::resynth::{
     mag_to_tl, map_samples_to_fnums, process_samples_resynth_multi, synth_from_spectral_features,
 };
+use soundlog::chip::fnumber::{generate_12edo_fnum_table, ChipTypeSpec, Opl3Spec, OpnSpec};
 use soundlog::chip::Chip;
-use soundlog::chip::fnumber::{ChipTypeSpec, Opl3Spec, OpnSpec, generate_12edo_fnum_table};
 
 fn generate_test_sine(freq: f32, sample_rate: usize, sample_count: usize, mag: f32) -> Vec<f32> {
     let peak = Peak {
