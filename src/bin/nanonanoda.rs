@@ -1,12 +1,12 @@
-use std::path::{Path, PathBuf};
-use std::str::FromStr;
-
 use clap::{Parser, ValueEnum};
-use nanonanoda::{
-    interleaved_to_mono, process_samples_resynth_multi, process_samples_resynth_multi_to_vgm,
+use nanonanoda::pcm::interleaved_to_mono;
+use nanonanoda::resynth::{
+    process_samples_resynth_multi, process_samples_resynth_multi_to_vgm,
 };
 use soundlog::chip::Chip;
 use soundlog::meta::Gd3;
+use std::path::{Path, PathBuf};
+use std::str::FromStr;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]

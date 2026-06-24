@@ -1,6 +1,7 @@
-use ::nanonanoda::pcm::{Peak, analyze_pcm_peaks, synthesize_sines};
-use ::nanonanoda::process_samples_resynth_multi;
-use ::nanonanoda::resynth::{mag_to_tl, map_samples_to_fnums, synth_from_spectral_features};
+use nanonanoda::pcm::{Peak, analyze_pcm_peaks, synthesize_sines};
+use nanonanoda::resynth::{
+    mag_to_tl, map_samples_to_fnums, process_samples_resynth_multi, synth_from_spectral_features,
+};
 use soundlog::chip::Chip;
 use soundlog::chip::fnumber::{ChipTypeSpec, Opl3Spec, OpnSpec, generate_12edo_fnum_table};
 
