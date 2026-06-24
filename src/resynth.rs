@@ -4,9 +4,8 @@ use crate::ym::{
     ymf262_keyon,
 };
 use soundlog::chip::Chip;
-use soundlog::chip::fnumber::FNumberEntry;
 use soundlog::chip::fnumber::{
-    ChipTypeSpec, FNumber, FNumberError, Opl3Spec, OpnSpec, find_and_tune_fnumber,
+    ChipTypeSpec, FNumber, FNumberEntry, FNumberError, Opl3Spec, OpnSpec, find_and_tune_fnumber,
     generate_12edo_fnum_table,
 };
 use soundlog::{EndOfData, Instance, WaitSamples};
